@@ -1,6 +1,16 @@
 # valve-tools
 
 쿠버네티스 클러스터에 DevOps 도구 설치를 돕는 CUI 도구 입니다.
+
+쿠버네티스를 기업에서 사용하기 위해서는 좀 더 다양한 요구 사항을 만족시켜야 합니다.
+* CI/CD 파이프라인
+* 모니터링
+* 로깅
+* AutoScaling
+* 보안 (인증, 인가, 네트워크)
+* 대시보드
+이러한 요구 사항은 쿠버네티스 위에 이를 지원하는 도구를 설치하여 만족 시킬 수 있습니다. valve-tools는 이런 다양한 요구 사항을 만족시킬 수 있는 다양한 툴 설치를 지원합니다.
+
 도구를 설치하기 위한 템플릿은 대부분 [stable helm chart](https://github.com/helm/charts/tree/master/stable)를 사용하지만 일부 차트는 incubator 또는 벤더 제공 helm chart를 사용합니다. 
 
 해당 프로젝트는 [kops-cui](https://github.com/opsnow/kops-cui)의 도구 설치 구현을 분리해서 진행하는 프로젝트입니다. kops 기반 클러스터 외에 모든 쿠버네티스 클러스터에 범용적인 DevOps 툴체인 설치 도구로 사용하기 위해서 입니다.
