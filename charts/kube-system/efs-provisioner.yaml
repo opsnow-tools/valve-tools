@@ -1,0 +1,22 @@
+# chart-repo: stable/efs-provisioner
+# chart-version: 0.3.5
+# chart-pdb: N 1
+
+nameOverride: efs-provisioner
+
+# podAnnotations:
+#   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+efsProvisioner:
+  efsFileSystemId: EFS_ID
+  awsRegion: AWS_REGION
+  path: /shared
+  provisionerName: CLUSTER_NAME/efs
+  storageClass:
+    name: efs
+    isDefault: false
+    gidAllocate:
+      enabled: true
+      gidMin: 40000
+      gidMax: 50000
+    reclaimPolicy: Retain

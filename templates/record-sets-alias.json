@@ -1,0 +1,16 @@
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "DOMAIN",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "ZONE_ID",
+          "DNSName": "DNS_NAME",
+          "EvaluateTargetHealth": false
+        }
+      }
+    }
+  ]
+}

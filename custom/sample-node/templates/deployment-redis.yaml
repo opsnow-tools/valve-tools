@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fullname" . }}-redis
+  labels:
+    app: {{ include "fullname" . }}-redis
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ include "fullname" . }}-redis
+    helm.sh/chart: {{ include "chart" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "fullname" . }}-redis
+      # app.kubernetes.io/instance: {{ .Release.Name }}
+      # app.kubernetes.io/name: {{ include "fullname" . }}-redis
+  template:
+    metadata:
+      labels:
+        app: {{ include "fullname" . }}-redis
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/name: {{ include "fullname" . }}-redis
+        version: stable
+    spec:
+      containers:
+      - name: redis
+        image: redis
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi

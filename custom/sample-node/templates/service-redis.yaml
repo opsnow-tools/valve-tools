@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fullname" . }}-redis
+  labels:
+    app: {{ include "fullname" . }}-redis
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ include "fullname" . }}-redis
+    helm.sh/chart: {{ include "chart" . }}
+spec:
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  selector:
+    app: {{ include "fullname" . }}-redis
+    # app.kubernetes.io/instance: {{ .Release.Name }}
+    # app.kubernetes.io/name: {{ include "fullname" . }}-redis

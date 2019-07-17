@@ -1,0 +1,64 @@
+# chart-repo: stable/jenkins
+# chart-version: 0.28.10
+# chart-ingress: true
+# chart-pvc: jenkins ReadWriteOnce 8Gi
+
+# nameOverride: jenkins
+
+rbac:
+  install: true
+
+Master:
+  AdminUser: admin
+  AdminPassword: PASSWORD
+  resources:
+    requests:
+      cpu: 250m
+      memory: 3Gi
+    limits:
+      cpu: 1000m
+      memory: 4Gi
+  # PodAnnotations:
+  #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+  JavaOpts: "-Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Seoul"
+  ServiceType: SERVICE_TYPE
+  HostName: INGRESS_DOMAIN
+  Ingress:
+    Annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  InstallPlugins:
+    # https://github.com/helm/charts/blob/master/stable/jenkins/values.yaml
+    - kubernetes:latest
+    - workflow-job:latest
+    - workflow-aggregator:latest
+    - credentials-binding:latest
+    # https://plugins.jenkins.io/blueocean
+    - blueocean:latest
+    # https://plugins.jenkins.io/kubernetes-credentials-provider
+    - kubernetes-credentials-provider:latest
+    # https://plugins.jenkins.io/pipeline-github-lib
+    - pipeline-github-lib:latest
+    # https://plugins.jenkins.io/active-directory
+    - active-directory:latest
+    # https://plugins.jenkins.io/role-strategy
+    - role-strategy:latest
+    # https://plugins.jenkins.io/ldap
+    - ldap:latest
+    # https://plugins.jenkins.io/google-login
+    - google-login:latest
+  # -- jenkins-jobs -- start -- see: jenkins/jobs.sh #
+  # -- jenkins-jobs -- end -- #
+
+# Agent:
+#   Enabled: true
+#   Image: quay.io/nalbam/jnlp-slave
+#   ImageTag: latest
+#   AlwaysPullImage: true
+
+Persistence:
+  Enabled: true
+  AccessMode: ReadWriteOnce
+  Size: 8Gi
+  #:EFS:StorageClass: "efs"
+  ExistingClaim: jenkins

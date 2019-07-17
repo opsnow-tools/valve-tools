@@ -1,0 +1,12 @@
+# chart-repo: custom/efs-pvc-exporter
+# chart-version: latest
+
+image:
+  repository: opsnowtools/efs-pvc-exporter
+  tag: v0.1.7
+
+rolename: efs-viewer
+
+schedule: "SCHEDULE"
+
+restart: RESTART

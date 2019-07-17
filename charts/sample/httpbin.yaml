@@ -1,0 +1,10 @@
+# chart-repo: custom/httpbin
+# chart-version: latest
+# chart-ingress: true
+
+service:
+  type: SERVICE_TYPE
+
+ingress:
+  enabled: INGRESS_ENABLED
+  basedomain: BASE_DOMAIN

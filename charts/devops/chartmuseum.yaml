@@ -1,0 +1,43 @@
+# chart-repo: stable/chartmuseum
+# chart-version: 1.9.0
+# chart-ingress: true
+# chart-pvc: chartmuseum ReadWriteOnce 8Gi
+
+fullnameOverride: chartmuseum
+
+# replica:
+#   annotations:
+#     cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+env:
+  open:
+    DISABLE_API: false
+  # open:
+  #   STORAGE: amazon
+  #   STORAGE_AMAZON_BUCKET: my-s3-bucket
+  #   STORAGE_AMAZON_PREFIX:
+  #   STORAGE_AMAZON_REGION: us-east-1
+  # secret:
+  #   AWS_ACCESS_KEY_ID: "********" ## aws access key id value
+  #   AWS_SECRET_ACCESS_KEY: "********" ## aws access key secret value
+
+service:
+  type: SERVICE_TYPE
+
+ingress:
+  enabled: INGRESS_ENABLED
+  hosts:
+    INGRESS_DOMAIN:
+      - /
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+    ingress.kubernetes.io/proxy-body-size: 500m
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 8Gi
+  #:EFS:storageClass: "efs"
+  existingClaim: chartmuseum

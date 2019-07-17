@@ -1,0 +1,19 @@
+replicaCount: 1
+image:
+  repository: docker.io/citizenstig/httpbin
+  tag: latest
+  pullPolicy: Always
+labels: {}
+annotations: {}
+pod:
+  labels: {}
+  annotations: {}
+service:
+  type: ClusterIP
+  externalPort: 80
+  internalPort: 8000
+ingress:
+  enabled: false
+  basedomain: 127.0.0.1.nip.io
+istio:
+  enabled: false

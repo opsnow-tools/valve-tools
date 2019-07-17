@@ -1,0 +1,5 @@
+image:
+  repository: opsnowtools/efs-pvc-exporter
+  tag: v0.1.7
+
+rolename: efs-viewer

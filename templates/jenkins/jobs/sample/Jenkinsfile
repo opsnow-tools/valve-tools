@@ -1,0 +1,66 @@
+@Library("github.com/opsnow-tools/valve-butler")
+def butler = new com.opsnow.valve.v7.Butler()
+def label = "worker-${UUID.randomUUID().toString()}"
+properties([
+  buildDiscarder(logRotator(daysToKeepStr: "60", numToKeepStr: "30"))
+])
+podTemplate(label: label, containers: [
+  containerTemplate(name: "builder", image: "opsnowtools/valve-builder:v0.2.2", command: "cat", ttyEnabled: true, alwaysPullImage: true)
+], volumes: [
+  hostPathVolume(mountPath: "/var/run/docker.sock", hostPath: "/var/run/docker.sock"),
+  hostPathVolume(mountPath: "/home/jenkins/.helm", hostPath: "/home/jenkins/.helm")
+]) {
+  node(label) {
+    stage("Info") {
+      sh """
+        pwd
+        date
+        whoami
+        uname -a
+        echo $JOB_NAME
+        echo $BUILD_NUMBER
+      """
+    }
+    stage("Prepare") {
+      container("builder") {
+        sh """
+          pwd
+          date
+          whoami
+          uname -a
+        """
+        butler.prepare()
+      }
+    }
+    stage("Run docker") {
+      container("builder") {
+        sh """
+          docker version
+          docker images
+          docker ps
+        """
+      }
+    }
+    stage("Run kubectl") {
+      container("builder") {
+        sh """
+          kubectl version
+          kubectl cluster-info
+          kubectl get pod,svc,ing
+        """
+      }
+    }
+    stage("Run helm") {
+      container("builder") {
+        butler.helm_init()
+      }
+    }
+    stage("End") {
+      container("builder") {
+        sh """
+          ls -al
+        """
+      }
+    }
+  }
+}
