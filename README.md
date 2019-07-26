@@ -64,25 +64,66 @@
 ### 실행
 ```bash
 $ git clone https://github.com/opsnow-tools/valve-tools
-$ ./helm.sh
+$ ./run.sh
 ```
 ### 도구 설치
-TBD
-
-### 도구 삭제
-TBD
-
-### 버전/설정 변경
+#### 설정 파일 위치 및 공통 사항
 각 도구를 설치하기 위한 helm chart의 입력 설정값은 chart/\<namespace>/\<chartname>.yaml 에 정의되어 있습니다. 
 
-#### 템플릿 설정 변경
-chart/\<namespace>/\<chartname>.yaml 파일의 상단에는 매니페스트를 생성하기 위한 몇 가지 조건을 설정할 수 있습니다. 여기에서 차트의 버전, 차트 레포지토리, 인스레스 생셩 여부, PVC 사용 여부 등을 명시할 수 있습니다.
+##### 템플릿 설정 변경
+chart/\<namespace>/\<chartname>.yaml 파일의 상단에는 매니페스트를 생성하기 위한 몇 가지 조건을 설정할 수 있습니다. 여기에서 차트의 버전, 차트 레포지토리, 인rm레스 생성 여부, PVC 사용 여부 등을 명시할 수 있습니다.
 ```yaml
 # chart-repo: stable/jenkins
 # chart-version: 0.28.10
 # chart-ingress: true
 # chart-pvc: jenkins ReadWriteOnce 8Gi
 ```
-
-### helm chart 설정 변경
+##### helm chart 설정 변경
 chart/\<namespace>/\<chartname>.yaml 파일은 기본적인 애플리케이션의 속성을 포함하고 있습니다. 해당 값을 변경해서 애플리케이션의 기동 조건을 변경할 수 있습니다.
+
+#### 설치 순서
+각 도구는 설치 순서에 따라 다른 형상으로 만들어 질 수 있습니다. 
+helm은 K8S 서버에 tiller를 설치해줍니다. 이를 통해서 helm으로 다른 도구를 설치할 수 있습니다. 그러므로 가장 먼저 설치되어야 합니다.
+efs-provisioner는 efs 스토리지를 생성하고 이후 생성되는 PV를 EFS에 생성하도록 동작합니다. 만약 EFS를 사용해야하는 어플리케이션이 있다면 반드시 그 어플리케이션 보다 먼저 설치되어야 합니다.
+nginx-ingress 는 다양한 서비스의 인그레스 설정을 반영해 라우팅 룰을 결정합니다. 따라서 우선 설치되어야 하는 도구 입니다.
+
+이와 같이 설치 순서는 도구의 정상 동작에 영향을 미칠 수 있기 때문에 도구간의 상호 관계를 이해해야 합니다.
+
+* helm
+* efs-provisioner (efs 사용시)
+* nginx-ingress
+* cluster-autoscaler
+* heapster
+* kube-state-metrics
+* metrics-server
+* kubernetes-dashboard
+* prometheus
+* grafana
+
+#### 도구별 설치 가이드
+##### Network/Nginx Ingress
+##### Kubernetes System/Cluster Autoscaler
+##### Kubernetes System/Heapster
+##### Kubernetes System/Kube State Metrics
+##### Kubernetes System/Kubernetes Dashboard
+##### Kubernetes System/Metric Server
+##### Kubernetes System/K8S Spot Termination Handler (EKS Only)
+##### Authorization/Guard
+##### Authorization/AWS IAM Authenticator (EKS Only)
+##### DevOps/Jenkins
+##### DevOps/ArgoCD
+##### DevOps/Sonarqube
+##### DevOps/Sonatype Nexus
+##### DevOps/Chartmuseum
+##### DevOps/Docker Registry
+##### Monitoring/Prometheus
+##### Monitoring/Grafana
+##### Monitoring/Jaeger
+##### Monitoring/Datadog
+##### Monitoring/Newrelic Infrastructure
+##### Logging/Fluentd Elasticsearch
+##### Storage/EFS Provisioner
+##### ServiceMesh/Istio
+
+### 도구 삭제
+TBD
