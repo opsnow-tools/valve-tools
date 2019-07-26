@@ -1,7 +1,7 @@
 #!/bin/bash
 
 THIS_REPO="opsnow"
-THIS_NAME="kops-cui"
+THIS_NAME="valve-tools"
 THIS_VERSION="v0.0.0"
 
 DEBUG_MODE=true
