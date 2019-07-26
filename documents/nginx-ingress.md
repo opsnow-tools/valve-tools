@@ -1,3 +1,9 @@
+# Nginx Ingress
+
+https://github.com/helm/charts/tree/master/stable/nginx-ingress
+
+./charts/kube-ingress/nginx-ingress.yaml
+```yaml
 # chart-repo: stable/nginx-ingress
 # chart-version: 1.4.0
 
@@ -17,21 +23,24 @@ controller:
   config:
     # https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/configmap.md
     use-forwarded-headers: "true"
-    # max-worker-connections: "1024"
+    max-worker-connections: "1024"
     # worker-processes: "auto"  
-    # max-worker-open-files: "0"
-    # limit-rate: "0"
-    # limit-rate-after: "0"
-    # enable-multi-accept "true"
+    # max-worker-open-files: 0
+    # limit-rat: 0
+    # limit-rate-after: 0
+    # enable-multi-accept true
   service:
     annotations:
+      # AWS L7 ELB with SSL Termination
       service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
       service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
       service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
       service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
+      # ExternalDNS Service configuration
       # external-dns.alpha.kubernetes.io/hostname: "demo.opsnow.com."
       # external-dns.alpha.kubernetes.io/ttl: 300
     targetPorts:
+      # AWS L7 ELB with SSL Termination
       http: http
       https: http
   stats:
@@ -40,6 +49,7 @@ controller:
     enabled: true
     service:
       annotations:
+        # Prometheus Metrics
         prometheus.io/scrape: "true"
         prometheus.io/port: "10254"
   resources:
@@ -49,3 +59,4 @@ controller:
     requests:
       cpu: 100m
       memory: 256Mi
+```
