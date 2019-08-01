@@ -91,6 +91,7 @@ nginx-ingress 는 다양한 서비스의 인그레스 설정을 반영해 라우
 
 * helm
 * efs-provisioner (efs 사용시)
+  * EFS를 사용하지 않을 경우 EBS가 기동된 가용 영역(AZ)에 따라서 파드 재기동시 스토리지를 찾지 못하는 이슈가 있을 수 있습니다. 가용 영역을 지정해서 파드를 기동하거나, EFS를 사용해 이슈를 해결할 수 있습니다.
 * nginx-ingress
 * cluster-autoscaler
 * heapster
@@ -104,11 +105,11 @@ nginx-ingress 는 다양한 서비스의 인그레스 설정을 반영해 라우
 * Network
   * [nginx-ingress](./documents/nginx-ingress.md)
 * Kubernetes System
-  * cluster-autoscaler
-  * heapster
-  * kube-state-metrics
-  * kubernetes-dashboard
-  * metric-server
+  * [cluster-autoscaler](./documents/cluster-autoscaler.md)
+  * [heapster](./documents/heapster.md)
+  * [kube-state-metrics](./documents/kube-state-metrics.md)
+  * [kubernetes-dashboard](./documents/kubernetes-dashboard.md)
+  * [metrics-server](./documents/metrics-server.md)
   * k8s-spot-termination-handler (EKS Only)
 * Authorization
   * guard-server
@@ -120,7 +121,7 @@ nginx-ingress 는 다양한 서비스의 인그레스 설정을 반영해 라우
   * sonatype nexus
   * chartmuseum
   * docker-registry
-  * prometheus
+  * [prometheus](./documents/prometheus.md)
   * grafana
   * jaeger
   * datadog
