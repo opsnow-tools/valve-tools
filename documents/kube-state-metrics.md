@@ -4,7 +4,7 @@
 * https://github.com/helm/charts/tree/master/stable/kube-state-metrics
 
 
-## Values.yamlN
+## Values.yaml
 * ./charts/kube-system/kube-state-metrics.yaml
 ```yaml
 # chart-repo: stable/kube-state-metrics

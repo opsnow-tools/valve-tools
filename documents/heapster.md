@@ -4,7 +4,7 @@
 * https://github.com/helm/charts/tree/master/stable/heapster
 
 
-## Values.yamlN
+## Values.yaml
 * ./charts/kube-system/heapster.yaml
 ```yaml
 # chart-repo: stable/heapster
