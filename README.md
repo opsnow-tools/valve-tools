@@ -71,7 +71,7 @@ $ ./run.sh
 각 도구를 설치하기 위한 helm chart의 입력 설정값은 chart/\<namespace>/\<chartname>.yaml 에 정의되어 있습니다. 
 
 ##### 템플릿 설정 변경
-chart/\<namespace>/\<chartname>.yaml 파일의 상단에는 매니페스트를 생성하기 위한 몇 가지 조건을 설정할 수 있습니다. 여기에서 차트의 버전, 차트 레포지토리, 인rm레스 생성 여부, PVC 사용 여부 등을 명시할 수 있습니다.
+chart/\<namespace>/\<chartname>.yaml 파일의 상단에는 매니페스트를 생성하기 위한 몇 가지 조건을 설정할 수 있습니다. 여기에서 차트의 버전, 차트 레포지토리, 인그레스 생성 여부, PVC 사용 여부 등을 명시할 수 있습니다.
 ```yaml
 # chart-repo: stable/jenkins
 # chart-version: 0.28.10
