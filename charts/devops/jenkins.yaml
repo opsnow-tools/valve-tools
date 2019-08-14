@@ -11,12 +11,13 @@ rbac:
 Master:
   AdminUser: admin
   AdminPassword: PASSWORD
+  ImageTag: "2.176.2"
   resources:
     requests:
       cpu: 250m
       memory: 3Gi
     limits:
-      cpu: 1000m
+      cpu: 2
       memory: 4Gi
   # PodAnnotations:
   #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
@@ -29,24 +30,24 @@ Master:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   InstallPlugins:
     # https://github.com/helm/charts/blob/master/stable/jenkins/values.yaml
-    - kubernetes:latest
-    - workflow-job:latest
-    - workflow-aggregator:latest
-    - credentials-binding:latest
+    - kubernetes:2.176.2
+    - workflow-job:2.33
+    - workflow-aggregator:2.6
+    - credentials-binding:1.20
     # https://plugins.jenkins.io/blueocean
-    - blueocean:latest
+    - blueocean:1.18.1
     # https://plugins.jenkins.io/kubernetes-credentials-provider
-    - kubernetes-credentials-provider:latest
+    - kubernetes-credentials-provider:0.12.1
     # https://plugins.jenkins.io/pipeline-github-lib
-    - pipeline-github-lib:latest
+    - pipeline-github-lib:1.0
     # https://plugins.jenkins.io/active-directory
-    - active-directory:latest
+    - active-directory:2.12
     # https://plugins.jenkins.io/role-strategy
-    - role-strategy:latest
+    - role-strategy:2.10
     # https://plugins.jenkins.io/ldap
-    - ldap:latest
+    - ldap:1.20
     # https://plugins.jenkins.io/google-login
-    - google-login:latest
+    - google-login:1.4
   # -- jenkins-jobs -- start -- see: jenkins/jobs.sh #
   # -- jenkins-jobs -- end -- #
 
