@@ -212,7 +212,7 @@ logo() {
         tput setaf 3
     fi
 
-    cat ${SHELL_DIR}/templates/kops-cui-logo.txt
+    cat ${SHELL_DIR}/templates/valve-tools-logo.txt
     echo
 
     if [ "${TPUT}" != "" ]; then

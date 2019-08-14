@@ -8,9 +8,9 @@ HELM=
 DRAFT=
 GUARD=
 
-mkdir -p ~/.kops-cui
+mkdir -p ~/.valve
 
-CONFIG=~/.kops-cui/tools
+CONFIG=~/.valve/tools
 touch ${CONFIG} && . ${CONFIG}
 
 ################################################################################
