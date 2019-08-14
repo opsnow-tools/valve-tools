@@ -30,7 +30,7 @@ Master:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   InstallPlugins:
     # https://github.com/helm/charts/blob/master/stable/jenkins/values.yaml
-    - kubernetes:2.176.2
+    - kubernetes:1.15.10
     - workflow-job:2.33
     - workflow-aggregator:2.6
     - credentials-binding:1.20
