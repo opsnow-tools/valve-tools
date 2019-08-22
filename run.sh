@@ -726,12 +726,13 @@ helm_install() {
     fi
 
     # for nginx-ingress
-    if [[ "${NAME}" == "nginx-ingress"* ]]; then
+    if [ "${NAME}" == "nginx-ingress" ]; then
         set_base_domain "${NAME}"
     fi
 
     # for nginx-ingress-private
     if [ "${NAME}" == "nginx-ingress-private" ]; then
+        set_base_domain "${NAME}"
         question "ingress rule delete all? (YES/[no]) : "
         if [ "${ANSWER}" == "YES" ]; then
             remove_ing_rule
