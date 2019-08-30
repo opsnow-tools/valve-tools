@@ -13,9 +13,9 @@ nexus:
   resources:
     requests:
       cpu: 250m
-      memory: 4Gi
+      memory: 2Gi
     limits:
-      cpu: 1000m
+      cpu: 2
       memory: 4Gi
   # podAnnotations:
   #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
