@@ -21,6 +21,14 @@ global:
     enabled: true
     enableHttps: true
     gatewayName: ingressgateway
+  proxy:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
 
 certmanager:
   enabled: true
