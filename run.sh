@@ -1879,13 +1879,13 @@ read_root_domain() {
     __CNT=$(cat ${LIST} | wc -l | xargs)
     if [ "x${__CNT}" == "x0" ]; then
         ROOT_DOMAIN=""
-        echo "Can't find root domain"
+        _result "Can't find root domain" 
     else
         # select
         select_one
 
         if [ "${SELECTED}" == "" ]; then
-            SELECTED=$(sed -n ${ANSWER}p ${LIST})
+            SELECTED=$(sed -n 1p ${LIST})
         fi
 
         ROOT_DOMAIN=${SELECTED}
