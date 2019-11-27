@@ -16,7 +16,7 @@ server:
   #:ING:    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   #:ING:  hosts:
   #:ING:    - INGRESS_DOMAIN
-  retention: "40d"
+  retention: "15d"
   persistentVolume:
     enabled: true
     accessModes:
