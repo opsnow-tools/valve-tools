@@ -1879,7 +1879,7 @@ read_root_domain() {
     __CNT=$(cat ${LIST} | wc -l | xargs)
     if [ "x${__CNT}" == "x0" ]; then
         ROOT_DOMAIN=""
-        _result "Can't find root domain" 
+        _warn "Can't find root domain" 
     else
         # select
         select_one

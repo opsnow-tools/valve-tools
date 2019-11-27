@@ -40,6 +40,11 @@ _replace() {
     fi
 }
 
+_warn() {
+    echo
+    _echo "# $@" 5
+}
+
 _result() {
     echo
     _echo "# $@" 4
