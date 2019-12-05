@@ -1,5 +1,5 @@
 # chart-repo: argo/argo-cd
-# chart-version: latest
+# chart-version: 0.3.0
 # chart-ingress: true
 
 server:
