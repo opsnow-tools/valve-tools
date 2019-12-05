@@ -2,7 +2,7 @@
 # chart-version: v0.11.0
 
 config:
-  clusterName: "seoul-sre-jj0-eks"
+  clusterName: "CLUSTER_NAME"
 
 apiserver:
   enabled: false
