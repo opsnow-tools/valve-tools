@@ -1,0 +1,136 @@
+# chart-repo: harbor/harbor
+# chart-version: 1.1.3
+# chart-ingress: true
+
+expose:
+  ingress:
+    hosts:
+      core: INGRESS_DOMAIN
+      notary: notary.BASE_DOMAIN
+  tls:
+    secretName: cert-stage-wildcard
+
+externalURL: https://INGRESS_DOMAIN
+
+harborAdminPassword: admin
+
+
+nginx:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+portal:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+core:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 300m
+
+jobservice:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+registry:
+  registry:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+  controller:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+
+chartmuseum:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+clair:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+notary:
+  enabled: true
+  server:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+  signer:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+
+database:
+  internal:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+
+redis:
+  internal:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+
+persistence:
+  enabled: true
+  resourcePolicy: "delete"
+  persistentVolumeClaim:
+    registry:
+      existingClaim: ""
+      # existingClaim: "harbor-harbor-registry"
+      #:EFS:storageClass: "efs"
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    chartmuseum:
+      existingClaim: ""
+      # existingClaim: "harbor-harbor-chartmuseum"
+      #:EFS:storageClass: "efs"
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    jobservice:
+      existingClaim: ""
+      # existingClaim: "harbor-harbor-jobservice"
+      #:EFS:storageClass: "efs"
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    database:
+      existingClaim: ""
+      # existingClaim: "database-data-harbor-harbor-database-0"
+      #:EFS:storageClass: "efs"
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    redis:
+      existingClaim: ""
+      # existingClaim: "data-harbor-harbor-redis-0"
+      #:EFS:storageClass: "efs"
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+  imageChartStorage:
+    disableredirect: false
+    type: filesystem
+    filesystem:
+      rootdirectory: /storage
