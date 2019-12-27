@@ -1,6 +1,48 @@
 # valve-tools
+쿠버네티스 클러스터에 DevOps 툴 체인 설치를 돕는 CUI 도구입니다.
+DevOps 팀은 valve-tools를 사용하여 쿠버네티스 클러스터에 DevOps 툴 체인을 빠르게 구성하고 애플리케이션의 생명주기를 관리할 수 있습니다.
 
-쿠버네티스 클러스터에 DevOps 도구 설치를 돕는 CUI 도구 입니다.
+[DevOps 툴 체인](https://ko.wikipedia.org/wiki/%EB%8D%B0%EB%B8%8C%EC%98%B5%EC%8A%A4)은 다음과 같은 단계로 구성됩니다. 각 단계별로 요구 사항을 만족시키지 위한 하나 이상의 도구가 필요합니다.
+1. 코드 - 코드 개발 및 검토, 버전 관리 도구, 코드 병합
+1. 빌드 - 지속적 통합(CI) 도구, 빌드 상태
+1. 테스트 - 테스트 및 결과가 성능을 결정
+1. 패키지 - 애플리케이션 디플로이 이전 단계
+1. 릴리즈 - 변경사항 관리, 릴리스 승인, 릴리스 자동화
+1. 구성 - 인프라스트럭처 구성 및 관리, IaC(Infrastructure as Code) 도구
+1. 모니터링 - 애플리케이션 성능 모니터링, 최종 사용자 경험.
+
+## 밸브 DevOps 툴 체인 
+괄호로 표기된 도구는 쿠버네티스에 설치되어 동작하지 않지만 연동되어 동작하는 도구 입니다. 여기에 표기된 도구는 툴 체인의 주요 도구만 기술하였습니다.
+단계 | 툴 체인
+--- | -----
+코드 | (Bitbucket)
+빌드 | Jenkins
+테스트 | Sonarqube
+패키지 | Sonatype Nexus, Helm, ChartMuseum, Docker Registry, Docker
+릴리즈 | Jenkins, (Kubernetes), ClusterAutoscaler
+구성 | (Terraform)
+모니터링 | Prometheus, Grafana, Jaeger, Fluentd, (AWS Elasticsearch, Kibana), (OpsNow AlertNow)
+
+
+## 설치 및 실행
+깃을 클론 받고 valve-tools 구동을 위한 스크립트를 실행합니다.
+```bash
+$ git clone https://github.com/opsnow-tools/valve-tools.git
+$ cd valve-tools
+$ ./run.sh
+```
+
+
+
+DevOps 툴 체인은 일반적으로 다음과 같은 요구 사항을 만족시켜야 합니다.
+* CI/CD 파이프라인
+* 모니터링
+* 로깅
+* AutoScaling
+* 보안 (인증, 인가, 네트워크)
+* 대시보드
+
+
 
 쿠버네티스를 기업에서 사용하기 위해서는 좀 더 다양한 요구 사항을 만족시켜야 합니다.
 * CI/CD 파이프라인
