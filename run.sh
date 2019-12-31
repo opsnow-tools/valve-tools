@@ -83,6 +83,9 @@ press_enter() {
         batch)
             charts_menu "batch"
             ;;
+        harbor)
+            charts_menu "harbor"
+            ;;
         istio)
             istio_menu
             ;;
@@ -101,6 +104,7 @@ main_menu() {
     _echo "5. devops.."
     _echo "6. sample.."
     _echo "7. batch.."
+    _echo "8. harbor.."
     echo
     _echo "i. istio.."
     echo
@@ -138,6 +142,9 @@ main_menu() {
             ;;
         7)
             charts_menu "batch"
+            ;;
+        8)
+            charts_menu "harbor"
             ;;
         i)
             istio_menu
@@ -420,8 +427,11 @@ helm_install() {
     if [ "${NAME}" == "cert-manager" ]; then
         # Install the CustomResourceDefinition resources separately
         # https://github.com/helm/charts/blob/master/stable/cert-manager/README.md
-        kubectl apply \
-            -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
+#        kubectl apply \
+#            -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
+        kubectl apply --validate=false \
+            -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
+
 
         # Label the cert-manager namespace to disable resource validation
         kubectl label namespace ${NAMESPACE} certmanager.k8s.io/disable-validation=true
@@ -872,6 +882,12 @@ helm_repo() {
             _REPO="https://argoproj.github.io/argo-helm"
         elif [ "${_NAME}" == "monocular" ]; then
             _REPO="https://helm.github.io/monocular"
+        elif [ "${_NAME}" == "harbor" ]; then
+            _REPO="https://helm.goharbor.io"
+        elif [ "${_NAME}" == "appscode" ]; then
+            _REPO="https://charts.appscode.com/stable/"
+        elif [ "${_NAME}" == "jetstack" ]; then
+            _REPO="https://charts.jetstack.io"
         fi
     fi
 
@@ -1876,10 +1892,20 @@ read_root_domain() {
     _command "aws route53 list-hosted-zones | jq -r '.HostedZones[] | .Name' | sed 's/.$//'"
     aws route53 list-hosted-zones | jq -r '.HostedZones[] | .Name' | sed 's/.$//' > ${LIST}
 
-    # select
-    select_one
+    __CNT=$(cat ${LIST} | wc -l | xargs)
+    if [ "x${__CNT}" == "x0" ]; then
+        ROOT_DOMAIN=""
+        _warn "Can't find root domain" 
+    else
+        # select
+        select_one
 
-    ROOT_DOMAIN=${SELECTED}
+        if [ "${SELECTED}" == "" ]; then
+            SELECTED=$(sed -n 1p ${LIST})
+        fi
+
+        ROOT_DOMAIN=${SELECTED}
+    fi
 }
 
 get_ssl_cert_arn() {

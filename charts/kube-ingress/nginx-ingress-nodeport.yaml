@@ -46,3 +46,5 @@ controller:
     requests:
       cpu: 100m
       memory: 256Mi
+  extraArgs:
+    default-ssl-certificate: kube-ingress/cert-stage-wildcard
