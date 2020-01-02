@@ -4,8 +4,6 @@
 
 nameOverride: prometheus-adapter
 
-version: 0.5.0
-
 prometheus:
   url: http://prometheus-server
   port: 80
