@@ -52,6 +52,8 @@ run() {
 
     config_load
 
+    select_cluster_type
+
     main_menu
 }
 
@@ -1768,6 +1770,38 @@ delete_crds() {
         _command "kubectl delete crds *.${1}"
         kubectl delete crds ${LIST}
     fi
+}
+
+select_cluster_type() {
+    logo
+
+    # 현재 선택된 노드 타입을 지정한다
+    # 노드 타입은 툴체인노드 or 쿠버네티스 타겟 노드 둘 중 하나다
+    # TODO 기존 저장된 타입을 출력해준다
+    # config list
+    LIST=${SHELL_DIR}/build/${THIS_NAME}/node-type-list
+    echo "toolchain-cluster" > ${LIST}
+    echo "target-cluster" >> ${LIST}
+    
+    #show default value
+    if [ "${CLUSTER_TYPE}" != "" ]; then
+        echo "default type : ${CLUSTER_TYPE}"
+    fi
+
+    # select
+    select_one true
+
+    if [ "${SELECTED}" == "" ]; then
+        if [ "${CLUSTER_TYPE}" == "" ]; then
+            CLUSTER_TYPE="toolchain-cluster"
+        fi
+        echo ${CLUSTER_TYPE}
+    else
+        CLUSTER_TYPE="${SELECTED}"
+    fi
+
+    CONFIG_SAVE=true
+    config_save
 }
 
 get_cluster() {
