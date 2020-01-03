@@ -52,7 +52,7 @@ run() {
 
     config_load
 
-    select_node_type
+    select_cluster_type
 
     main_menu
 }
@@ -1772,7 +1772,7 @@ delete_crds() {
     fi
 }
 
-select_node_type() {
+select_cluster_type() {
     logo
 
     # 현재 선택된 노드 타입을 지정한다
@@ -1780,21 +1780,24 @@ select_node_type() {
     # TODO 기존 저장된 타입을 출력해준다
     # config list
     LIST=${SHELL_DIR}/build/${THIS_NAME}/node-type-list
-    echo "toolchin-node" > ${LIST}
-    echo "target-node" >> ${LIST}
+    echo "toolchain-cluster" > ${LIST}
+    echo "target-cluster" >> ${LIST}
     
     #show default value
-    if [ "${NODE_TYPE}" != "" ]; then
-        echo "default type : ${NODE_TYPE}"
+    if [ "${CLUSTER_TYPE}" != "" ]; then
+        echo "default type : ${CLUSTER_TYPE}"
     fi
 
     # select
     select_one true
 
     if [ "${SELECTED}" == "" ]; then
-        echo ${NODE_TYPE}
+        if [ "${CLUSTER_TYPE}" == "" ]; then
+            CLUSTER_TYPE="toolchain-cluster"
+        fi
+        echo ${CLUSTER_TYPE}
     else
-        NODE_TYPE="${SELECTED}"
+        CLUSTER_TYPE="${SELECTED}"
     fi
 
     CONFIG_SAVE=true

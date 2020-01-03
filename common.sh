@@ -263,7 +263,7 @@ config_save() {
     echo "CERT_MAN=${CERT_MAN}" >> ${CONFIG}
     echo "EFS_ID=${EFS_ID}" >> ${CONFIG}
     echo "ISTIO=${ISTIO}" >> ${CONFIG}
-    echo "NODE_TYPE=${NODE_TYPE}" >> ${CONFIG}
+    echo "CLUSTER_TYPE=${CLUSTER_TYPE}" >> ${CONFIG}
 
     _command "save ${THIS_NAME}-config"
     cat ${CONFIG}
@@ -309,8 +309,7 @@ variables_save() {
     echo "@Field" >> ${CONFIG}
     echo "def base_domain = \"${BASE_DOMAIN}\"" >> ${CONFIG}
 
-    COUNT=$(kubectl get ing --all-namespaces | grep devops | grep -v argocd | wc -l | xargs)
-    if [ "${NODE_TYPE}" == "target-node" ]; then
+    if [ "${CLUSTER_TYPE}" == "target-cluster" ]; then
         echo "@Field" >> ${CONFIG}
         echo "def cluster = \"${CLUSTER_NAME}\"" >> ${CONFIG}
     else
