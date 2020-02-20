@@ -2,7 +2,7 @@
 
 OS_NAME="$(uname | awk '{print tolower($0)}')"
 
-L_PAD="  "
+L_PAD=""
 
 command -v fzf > /dev/null && FZF=true
 command -v tput > /dev/null && TPUT=true
@@ -41,34 +41,43 @@ _replace() {
 }
 
 _warn() {
-    echo
     _echo "# $@" 5
 }
 
+_debug() {
+    if [ "${DEBUG_MODE}" == "true" ]; then
+        echo "DEBUG)" $@
+    fi
+}
+
+_debug_cat() {
+    if [ "${DEBUG_MODE}" == "true" ]; then
+        echo "DEBUG) 파일 경로 :" $@
+        echo "DEBUG) ---------------------------------------------------------------------------"
+        cat $@
+        echo "DEBUG) ---------------------------------------------------------------------------"
+    fi
+}
+
 _result() {
-    echo
     _echo "# $@" 4
 }
 
 _command() {
-    echo
     _echo "$ $@" 3
 }
 
 _success() {
-    echo
     _echo "+ $@" 2
     _exit 0
 }
 
 _error() {
-    echo
     _echo "- $@" 1
     _exit 1
 }
 
 _exit() {
-    echo
     exit $1
 }
 
@@ -88,6 +97,7 @@ password() {
 
 select_one() {
     OPT=$1
+    _debug "OPT="${OPT}
 
     SELECTED=
 
@@ -126,6 +136,7 @@ select_one() {
             SELECTED=$(sed -n ${ANSWER}p ${LIST})
         # fi
     fi
+    _debug "SELECTED="${SELECTED}
 }
 
 progress() {
@@ -181,20 +192,34 @@ get_node_zones() {
 }
 
 get_template() {
+    _debug "템플릿으로 사용할 차트 파일을 복사 또는 github에서 다운로드 받는다."
     __FROM=${SHELL_DIR}/${1}
     __DIST=${2}
+    _debug "__FROM="${__FROM}
+    _debug "__DIST="${__DIST}
 
+    _debug "mkdir -p ${SHELL_DIR}/build/${THIS_NAME}"
     mkdir -p ${SHELL_DIR}/build/${THIS_NAME}
+    _debug "rm -rf ${__DIST}"
     rm -rf ${__DIST}
 
+    _debug "소스 파일이 존재하고 정상이면 복사하고, 아니면 github(https://raw.githubusercontent.com/opsnow/valve-tools)에서 다운로드 받는다."
+    _debug "공식 차트 사이트에서 제공하는 values.yaml이 아님!!! valve-tools에서 커스텀하게 작성한 파일입니다."
+    _debug "참고 : curl -sL https://raw.githubusercontent.com/${THIS_REPO}/${THIS_NAME}/master/${1} > ${__DIST}"
     if [ -f ${__FROM} ]; then
+        _debug "cat ${__FROM} > ${__DIST}"
         cat ${__FROM} > ${__DIST}
     else
+        # 이 코드 블럭은 방어 코드로 보임, 소스 파일이 없다는거는 최신 버전의 valve-tools가 아니라는 의미인데...
+        # 이때는 valve-tools를 최신 버전으로 받으라고 하고 프로그램을 종료시키는게 좋은 방법인거 같음.
+        _debug "curl -sL https://raw.githubusercontent.com/${THIS_REPO}/${THIS_NAME}/master/${1} > ${__DIST}"
         curl -sL https://raw.githubusercontent.com/${THIS_REPO}/${THIS_NAME}/master/${1} > ${__DIST}
     fi
+
     if [ ! -f ${__DIST} ]; then
         _error "Template does not exists. [${1}]"
     fi
+    _debug_cat ${__DIST}
 }
 
 update_tools() {
@@ -213,32 +238,46 @@ update_self() {
 
 logo() {
     if [ "${TPUT}" != "" ]; then
+        # 화면 초기화
         tput clear
+        # 노란색으로 출력
         tput setaf 3
     fi
 
     cat ${SHELL_DIR}/templates/valve-tools-logo.txt
-    echo
 
     if [ "${TPUT}" != "" ]; then
+        # 모든 속성을 초기화
         tput sgr0
+    fi
+
+    if [ "${DEBUG_MODE}" == "true" ]; then
+        _echo  "Running debug mode" 4
     fi
 }
 
 config_load() {
+    _debug "kubectl get pod -n kube-system | wc -l | xargs"
     COUNT=$(kubectl get pod -n kube-system | wc -l | xargs)
+    _debug "COUNT="${COUNT}
 
     if [ "x${COUNT}" == "x0" ]; then
         _error "Unable to connect to the cluster."
     fi
 
+    _debug "kubectl get secret -n default | grep ${THIS_NAME}-config  | wc -l | xargs"
     COUNT=$(kubectl get secret -n default | grep ${THIS_NAME}-config  | wc -l | xargs)
+    _debug "COUNT="${COUNT}
 
     if [ "x${COUNT}" != "x0" ]; then
+        _command "mkdir -p ${SHELL_DIR}/build/${CLUSTER_NAME}"
         mkdir -p ${SHELL_DIR}/build/${CLUSTER_NAME}
 
+        _command "${SHELL_DIR}/build/${CLUSTER_NAME}/config.sh"
         CONFIG=${SHELL_DIR}/build/${CLUSTER_NAME}/config.sh
+        _debug_cat ${CONFIG}
 
+        _command "kubectl get secret ${THIS_NAME}-config -n default -o json | jq -r '.data.text' | base64 --decode > ${CONFIG}"
         kubectl get secret ${THIS_NAME}-config -n default -o json | jq -r '.data.text' | base64 --decode > ${CONFIG}
 
         _command "load ${THIS_NAME}-config"
@@ -249,11 +288,17 @@ config_load() {
 }
 
 config_save() {
+    _debug "config_save() 함수 시작"
+
+    _debug "CONFIG_SAVE="${CONFIG_SAVE}
     if [ "${CONFIG_SAVE}" == "" ]; then
+        _debug "CONFIG_SAVE 변수에 값이 없어 더이상 실행 안함."
         return
     fi
 
     CONFIG=${SHELL_DIR}/build/${CLUSTER_NAME}/config.sh
+    echo "" > ${CONFIG}
+    _debug_cat ${CONFIG}
 
     echo "# ${THIS_NAME} config" > ${CONFIG}
     echo "CLUSTER_NAME=${CLUSTER_NAME}" >> ${CONFIG}
@@ -269,24 +314,41 @@ config_save() {
     cat ${CONFIG}
 
     ENCODED=${SHELL_DIR}/build/${CLUSTER_NAME}/config.txt
+    echo "" > ${ENCODED}
+    _debug_cat ${ENCODED}
 
     if [ "${OS_NAME}" == "darwin" ]; then
         cat ${CONFIG} | base64 > ${ENCODED}
     else
         cat ${CONFIG} | base64 -w 0 > ${ENCODED}
     fi
+    _debug "${CONFIG} 파일을 읽어서 base64 인코딩한 다음 ${ENCODED} 파일에 저장한다."
+    _debug_cat ${ENCODED}
 
     CONFIG=${SHELL_DIR}/build/${CLUSTER_NAME}/config.yaml
+    echo "" > ${CONFIG}
+    _debug_cat ${CONFIG}
+
     get_template templates/config.yaml ${CONFIG}
+    _debug "templates/config.yaml 파일을 ${CONFIG} 파일에 복사한다."
+    _debug_cat ${CONFIG}
 
     _replace "s/REPLACE-ME/${THIS_NAME}-config/" ${CONFIG}
+    _debug "REPLACE-ME 문자열을 ${THIS_NAME}-config 문자열로 변경한다."
+    _debug_cat ${CONFIG}
 
+    _debug "base64 인코딩된 파일(${ENCODED})에서 탭을 공백4개로 변환한 다음 ${CONFIG} 파일 뒤에 덧붙인다."
     sed "s/^/    /" ${ENCODED} >> ${CONFIG}
+    _debug_cat ${CONFIG}
 
+    _debug "config 설정을 default 네임스페이스에 설치한다."
     _command "kubectl apply -f ${CONFIG} -n default"
     kubectl apply -f ${CONFIG} -n default
 
+    # 변수를 초기화 한다. 다른 곳에서 이 변수에 값을 세팅하고 이 함수를 호출하면 동작하게 하기 위해서이다.
     CONFIG_SAVE=
+
+    _debug "config_save() 함수 끝"
 }
 
 variables_domain() {

@@ -1,0 +1,54 @@
+# chart-repo: stable/nginx-ingress
+# chart-version: 1.4.0
+
+nameOverride: nginx-ingress
+
+controller:
+  # kind: DaemonSet
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 11
+    targetCPUUtilizationPercentage: 60
+    targetMemoryUtilizationPercentage: 60
+  # podAnnotations:
+  #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+  config:
+    # https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/configmap.md
+    use-forwarded-headers: "true"
+    # max-worker-connections: "1024"
+    # worker-processes: "auto"  
+    # max-worker-open-files: "0"
+    # limit-rate: "0"
+    # limit-rate-after: "0"
+    # enable-multi-accept "true"
+  service:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
+      # external-dns.alpha.kubernetes.io/hostname: "demo.opsnow.com."
+      # external-dns.alpha.kubernetes.io/ttl: 300
+    targetPorts:
+      http: http
+      https: http
+  stats:
+    enabled: true
+  metrics:
+    enabled: true
+    service:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  extraArgs:
+    default-ssl-certificate: kube-ingress/cert-stage-wildcard
+

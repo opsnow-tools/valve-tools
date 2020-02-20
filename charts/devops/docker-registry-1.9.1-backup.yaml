@@ -1,0 +1,30 @@
+# chart-repo: stable/docker-registry
+# chart-version: 1.9.1
+# chart-ingress: true
+# chart-pvc: docker-registry ReadWriteOnce 20Gi
+
+nameOverride: docker-registry
+
+# podAnnotations:
+#   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+service:
+  type: SERVICE_TYPE
+
+ingress:
+  enabled: INGRESS_ENABLED
+  hosts:
+    - INGRESS_DOMAIN
+  path: /
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+    ingress.kubernetes.io/proxy-body-size: 500m
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 20Gi
+  #:EFS:storageClass: "efs"
+  existingClaim: docker-registry

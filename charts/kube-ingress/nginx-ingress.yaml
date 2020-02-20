@@ -1,39 +1,133 @@
 # chart-repo: stable/nginx-ingress
-# chart-version: 1.4.0
+# chart-version: 1.30.2
 
 nameOverride: nginx-ingress
 
 controller:
-  # kind: DaemonSet
-  replicaCount: 2
+  image:
+    repository: quay.io/kubernetes-ingress-controller/nginx-ingress-controller
+    tag: "0.28.0"
+  # Configures the ports the nginx-controller listens on
+  containerPort:
+    http: 80
+    https: 443
+  ## DaemonSet or Deployment
+  kind: Deployment
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
   autoscaling:
     enabled: true
     minReplicas: 2
     maxReplicas: 11
-    targetCPUUtilizationPercentage: 60
-    targetMemoryUtilizationPercentage: 60
-  # podAnnotations:
-  #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+    ## Target CPU utilization percentage to scale
+    ## The target average CPU utilization (represented as a percent of requested CPU) over all the pods.
+    ## If it's not specified or negative, a default autoscaling policy will be used.
+    targetCPUUtilizationPercentage: "70"
+    ## Target memory utilization percentage to scale
+    targetMemoryUtilizationPercentage: "70"
+  ## autoscaling 적용하면 replicaCount 설정 적용되지 않음
+  #replicaCount: 2
+  #minAvailable: 1
+  ## The update strategy to apply to the Deployment or DaemonSet
+  ## 참고: https://kubernetes.io/ko/docs/concepts/workloads/controllers/deployment/
+  updateStrategy:
+    rollingUpdate:
+      ## 업데이트 프로세스 중에 사용할 수 없는 최대 파드의 수를 지정하는 선택적 필드이다.
+      ## 이 값은 절대 숫자(예: 5) 또는 의도한 파드 비율(예: 10%)이 될 수 있다. 절대 값은 반올림해서 백분율로 계산한다.
+      ## 만약 .spec.strategy.rollingUpdate.maxSurge 가 0이면 값이 0이 될 수 없다. 기본 값은 25% 이다.
+      ## 예를 들어 이 값을 30%로 설정하면 롤링업데이트 시작시 즉각 이전 레플리카셋의 크기를 의도한 파드 중 70%를 스케일 인 할 수 있다.
+      ## 새 파드가 준비되면 기존 레플리카셋을 스케일 인 할 수 있으며, 업데이트 중에 항상 사용가능한 전체 파드의 수는 의도한 파드의 수의 70%이상이 되도록 새 레플리카셋을 스케일을 업 할수 있다.
+      maxUnavailable: 0
+      ## .spec.strategy.rollingUpdate.maxSurge 는 의도한 파드의 수에 대해 생성할 수 있는 최대 파드의 수를 지정하는 선택적 필드이다.
+      ## 이 값은 절대 숫자(예: 5) 또는 의도한 파드 비율(예: 10%)이 될 수 있다.
+      ## MaxUnavailable 값이 0이면 이 값은 0이 될 수 없다. 절대 값은 반올림해서 백분율로 계산한다. 기본 값은 25% 이다.
+      ## 예를 들어 이 값을 30%로 설정하면 롤링업데이트 시작시 새 레플리카셋의 크기를 즉시 조정해서 기존 및 새 파드의 전체 갯수를 의도한 파드의 130%를 넘지 않도록 한다.
+      ## 기존 파드가 죽으면 새로운 래플리카셋은 스케일 업할 수 있으며, 업데이트하는 동안 항상 실행하는 총 파드의 수는 최대 의도한 파드의 수의 130%가 되도록 보장한다.
+      maxSurge: 1
+    type: RollingUpdate
+  ## Annotations to be added to controller pods
+  #podAnnotations:
+    ## false로 설정하면 노드 사용율이 낮아도 해당 노드가 제거 되지 않습니다.
+    #cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
   config:
-    # https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/configmap.md
+    ## 참고 사이트 : https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/configmap.md
+
+    ## If true, NGINX passes the incoming X-Forwarded-* headers to upstreams.
+    ## Use this option when NGINX is behind another L7 proxy / load balancer that is setting these headers.
+    ## If false, NGINX ignores incoming X-Forwarded-* headers, filling them with the request information it sees.
+    ## Use this option if NGINX is exposed directly to the internet,
+    ## or it's behind a L3/packet-based load balancer that doesn't alter the source IP in the packets.
     use-forwarded-headers: "true"
-    # max-worker-connections: "1024"
-    # worker-processes: "auto"  
-    # max-worker-open-files: "0"
-    # limit-rate: "0"
-    # limit-rate-after: "0"
-    # enable-multi-accept "true"
+
+    ## Sets the maximum number of simultaneous connections that can be opened by each worker process.
+    ## 0 will use the value of max-worker-open-files.
+    ## default: 16384
+    ## !!! tip Using 0 in scenarios of high load improves performance at the cost of increasing RAM utilization (even on idle).
+    max-worker-connections: "0"
+
+    ## Sets the maximum number of files that can be opened by each worker process.
+    ## The default of 0 means "max open files (system's limit) / worker-processes - 1024".
+    ## default: 0
+    max-worker-open-files: "0"
+
+    ## Sets the number of worker processes.
+    ## The default of "auto" means number of available CPU cores.
+    worker-processes: "auto"
+
+    ## Binds worker processes to the sets of CPUs. worker_cpu_affinity.
+    ## By default worker processes are not bound to any specific CPUs. The value can be:
+    ##   "": empty string indicate no affinity is applied.
+    ##   cpumask: e.g. 0001 0010 0100 1000 to bind processes to specific cpus.
+    ##   auto: binding worker processes automatically to available CPUs.
+    worker-cpu-affinity: "auto"
+
+    ## Sets the algorithm to use for load balancing. The value can either be:
+    ##   round_robin: to use the default round robin loadbalancer
+    ##   ewma: to use the Peak EWMA method for routing (implementation)
+    ## The default is round_robin.
+    ## To load balance using consistent hashing of IP or other variables, consider the nginx.ingress.kubernetes.io/upstream-hash-by annotation.
+    ## To load balance using session cookies, consider the nginx.ingress.kubernetes.io/affinity annotation.
+    ## References: http://nginx.org/en/docs/http/load_balancing.html
+    load-balance: "round_robin"
+
   service:
+    enabled: true
+    type: LoadBalancer
+    ## https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/ 사이트 참고
+    ## Loadbalancer 타입인 경우만 해당되는 설정 입니다.
     annotations:
+      ## Used on the service to request a secure listener. Value is a valid certificate ARN.
+      ## For more, see ELB Listener Config CertARN is an IAM or CM certificate ARN
       service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
+
+      ## Used on the service to specify a comma-separated list of ports that will use SSL/HTTPS listeners. Defaults to * (all)
       service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+
+      ## Used on the service to specify the protocol spoken by the backend (pod) behind a listener.
+      ## If http (default) or https, an HTTPS listener that terminates the connection and parses headers is created. If set to ssl or tcp, a “raw” SSL listener is used.
+      ## If set to http and aws-load-balancer-ssl-cert is not used then a HTTP listener is used.
       service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+
+      ## Used on the service to specify the idle connection timeout.
       service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
-      # external-dns.alpha.kubernetes.io/hostname: "demo.opsnow.com."
-      # external-dns.alpha.kubernetes.io/ttl: 300
+
+      ## ExternalDNS Service configuration
+      #external-dns.alpha.kubernetes.io/hostname: "demo.opsnow.com."
+      #external-dns.alpha.kubernetes.io/ttl: 300
+
+    enableHttp: true
+    enableHttps: true
     targetPorts:
-      http: http
-      https: http
+      http: 80
+      https: 80
+    #nodePorts:
+      #http: 32000
+      #https: 32443
   stats:
     enabled: true
   metrics:
@@ -42,13 +136,6 @@ controller:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "10254"
-  resources:
-    limits:
-      cpu: 100m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 256Mi
-  extraArgs:
-    default-ssl-certificate: kube-ingress/cert-stage-wildcard
-
+  ## SSL 처리는 ELB에서 하기때문에 아래 설정은 필요 없음.
+  #extraArgs:
+    #default-ssl-certificate: kube-ingress/cert-stage-wildcard
