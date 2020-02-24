@@ -22,14 +22,14 @@ controller:
       memory: 256Mi
   autoscaling:
     enabled: true
-    minReplicas: 2
-    maxReplicas: 11
+    minReplicas: 3
+    maxReplicas: 9
     ## Target CPU utilization percentage to scale
     ## The target average CPU utilization (represented as a percent of requested CPU) over all the pods.
     ## If it's not specified or negative, a default autoscaling policy will be used.
-    targetCPUUtilizationPercentage: "70"
+    targetCPUUtilizationPercentage: "60"
     ## Target memory utilization percentage to scale
-    targetMemoryUtilizationPercentage: "70"
+    targetMemoryUtilizationPercentage: "60"
   ## autoscaling 적용하면 replicaCount 설정 적용되지 않음
   #replicaCount: 2
   #minAvailable: 1

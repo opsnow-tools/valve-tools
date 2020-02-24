@@ -22,16 +22,16 @@ controller:
       memory: 256Mi
   autoscaling:
     enabled: true
-    ## 워크 노드가 3개인 경우는 노드당 1개의 nginx 서버가 구성되도록 3으로 설정한다.
+    ## 워크 노드가 설치된 AZ가 3개인 경우는 AZ 당 1개의 nginx 서버가 구성되도록 3으로 설정한다.
     minReplicas: 3
-    ## 워크 노드의 배수로 설정한다. 노드 하나당 최대 3개의 nginx 서버가 구성된다.
+    ## 워크 노드가 설치된 AZ 갯수의 배수로 설정한다. AZ 하나당 최대 3개의 nginx 서버가 구성된다.
     maxReplicas: 9
     ## Target CPU utilization percentage to scale
     ## The target average CPU utilization (represented as a percent of requested CPU) over all the pods.
     ## If it's not specified or negative, a default autoscaling policy will be used.
-    targetCPUUtilizationPercentage: "70"
+    targetCPUUtilizationPercentage: "60"
     ## Target memory utilization percentage to scale
-    targetMemoryUtilizationPercentage: "70"
+    targetMemoryUtilizationPercentage: "60"
   ## autoscaling 적용하면 아래 설정이 적용되지 않음
   #replicaCount: 2
   #minAvailable: 1
