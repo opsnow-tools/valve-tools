@@ -4,7 +4,9 @@ THIS_REPO="opsnow"
 THIS_NAME="valve-tools"
 THIS_VERSION="v0.0.0"
 
-DEBUG_MODE=true
+# true로 설정하면 _debug(), _debug_cat() 함수가 동작합니다.
+# 기본값은 false 입니다.
+DEBUG_MODE=false
 
 CONFIG=
 CONFIG_SAVE=

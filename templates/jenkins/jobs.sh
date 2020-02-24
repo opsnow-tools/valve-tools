@@ -8,26 +8,32 @@ PARENT_DIR=$(dirname $(dirname ${SHELL_DIR}))
 . ${PARENT_DIR}/common.sh
 
 ################################################################################
+_debug "job.sh 스크립트 시작"
 
 CHART=${1:-${PARENT_DIR}/build/${THIS_NAME}-jenkins.yaml}
 CHART_TMP=${PARENT_DIR}/build/${THIS_NAME}-jenkins-tmp.yaml
-
 TMP_DIR=${PARENT_DIR}/build/${THIS_NAME}-jenkins
+_debug "CHART="${CHART}
+_debug "CHART_TMP="${CHART_TMP}
+_debug "TMP_DIR="${TMP_DIR}
 
 rm -rf ${TMP_DIR} ${CHART_TMP} && mkdir -p ${TMP_DIR}
 
 # job list
 JOB_LIST=${PARENT_DIR}/build/${THIS_NAME}-jenkins-job-list
-
 ls ${SHELL_DIR}/jobs/ > ${JOB_LIST}
+_debug "JOB_LIST="${JOB_LIST}
 
 while read JOB; do
     mkdir -p ${TMP_DIR}/${JOB}
+    _debug "mkdir -p ${TMP_DIR}/${JOB}"
 
     ORIGIN=${SHELL_DIR}/jobs/${JOB}/Jenkinsfile
-
     TARGET=${TMP_DIR}/${JOB}/Jenkinsfile
     CONFIG=${TMP_DIR}/${JOB}/config.xml
+    _debug "ORIGIN="${ORIGIN}
+    _debug "TARGET="${TARGET}
+    _debug "CONFIG="${CONFIG}
 
     # Jenkinsfile
     if [ -f ${ORIGIN} ]; then
@@ -68,3 +74,6 @@ sed "1,${POS}d" ${CHART} >> ${CHART_TMP}
 
 # done
 cp -rf ${CHART_TMP} ${CHART}
+
+_debug_cat ${CHART}
+_debug "job.sh 스크립트 끝"

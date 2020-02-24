@@ -1,0 +1,78 @@
+# chart-repo: stable/jenkins
+# chart-version: 1.9.17
+# chart-ingress: true
+# chart-pvc: jenkins ReadWriteOnce 8Gi
+
+# nameOverride: jenkins
+
+#rbac:
+#  install: true
+
+master:
+  adminUser: admin
+  adminPassword: PASSWORD
+  #ImageTag: "2.176.2"
+  resources:
+    requests:
+      cpu: 1200m
+      memory: 2048Mi
+    limits:
+      cpu: 1200m
+      memory: 2048Mi
+  # podAnnotations:
+  #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+  javaOpts: "-Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Seoul"
+  serviceType: SERVICE_TYPE
+  ingress:
+    enabled: true
+    hostName: INGRESS_DOMAIN
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  installPlugins:
+    # https://github.com/helm/charts/blob/master/stable/jenkins/values.yaml
+    - kubernetes:1.19.3
+    - workflow-aggregator:2.6
+    - credentials-binding:1.19
+    - git:3.11.0
+    - workflow-job:2.33
+    # old
+    # - kubernetes:1.15.10
+    # - workflow-job:2.33
+    # - workflow-aggregator:2.6
+    # - credentials-binding:1.20
+    # https://plugins.jenkins.io/blueocean
+    - blueocean:1.22.0
+    # - blueocean:1.18.1
+    # https://plugins.jenkins.io/kubernetes-credentials-provider
+    - kubernetes-credentials-provider:0.13
+    # - kubernetes-credentials-provider:0.12.1
+    # https://plugins.jenkins.io/pipeline-github-lib
+    - pipeline-github-lib:1.0
+    # https://plugins.jenkins.io/active-directory
+    - active-directory:2.16
+    # - active-directory:2.12
+    # https://plugins.jenkins.io/role-strategy
+    - role-strategy:2.16
+    # - role-strategy:2.10
+    # https://plugins.jenkins.io/ldap
+    - ldap:1.21
+    # - ldap:1.20
+    # https://plugins.jenkins.io/google-login
+    - google-login:1.6
+    # - google-login:1.4
+  # -- jenkins-jobs -- start -- see: jenkins/jobs.sh #
+  # -- jenkins-jobs -- end -- #
+
+# Agent:
+#   Enabled: true
+#   Image: quay.io/nalbam/jnlp-slave
+#   ImageTag: latest
+#   AlwaysPullImage: true
+
+persistence:
+  enabled: true
+  accessMode: "ReadWriteOnce"
+  size: "8Gi"
+  #:EFS:StorageClass: "efs"
+  existingClaim: jenkins
