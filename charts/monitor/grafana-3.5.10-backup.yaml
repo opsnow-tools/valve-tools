@@ -1,0 +1,96 @@
+# chart-repo: stable/grafana
+# chart-version: 3.5.10
+# chart-ingress: true
+# chart-pvc: grafana ReadWriteOnce 5Gi
+# chart-pdb: N 1
+
+nameOverride: grafana
+
+adminUser: admin
+adminPassword: PASSWORD
+
+# podAnnotations:
+#   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+service:
+  type: SERVICE_TYPE
+
+ingress:
+  enabled: INGRESS_ENABLED
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - INGRESS_DOMAIN
+
+env:
+  GF_SERVER_ROOT_URL: https://INGRESS_DOMAIN
+#:G_AUTH:  GF_AUTH_GOOGLE_ENABLED: true
+#:G_AUTH:  GF_AUTH_GOOGLE_CLIENT_ID: "G_CLIENT_ID"
+#:G_AUTH:  GF_AUTH_GOOGLE_CLIENT_SECRET: "G_CLIENT_SECRET"
+#:G_AUTH:  GF_AUTH_GOOGLE_ALLOWED_DOMAINS: "G_ALLOWED_DOMAINS"
+
+# extraSecretMounts:
+#   - name: grafana-custom
+#     mountPath: /usr/share/grafana/conf/custom.ini
+#     secretName: grafana-custom
+#     readOnly: true
+
+#:LDAP:grafana.ini:
+#:LDAP:  auth.ldap:
+#:LDAP:    enabled: true
+#:LDAP:    allow_sign_up: true
+#:LDAP:    config_file: /etc/grafana/ldap.toml
+
+#:LDAP:ldap:
+#:LDAP:  existingSecret: "GRAFANA_LDAP"
+
+persistence:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+  #:EFS:storageClassName: "efs"
+  existingClaim: grafana
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server
+        access: proxy
+        isDefault: true
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: "default"
+        orgId: 1
+        folder: ""
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    kube-cluster:
+      # https://grafana.com/dashboards/10512
+      gnetId: 10512
+      revision: 1
+      datasource: Prometheus
+    kube-deployment:
+      # https://grafana.com/dashboards/10515
+      gnetId: 10515
+      revision: 1
+      datasource: Prometheus
+    nginx-ingress:
+      # url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/grafana/dashboards/nginx.json
+      # https://grafana.com/dashboards/10516
+      gnetId: 10516
+      revision: 1
+      datasource: Prometheus

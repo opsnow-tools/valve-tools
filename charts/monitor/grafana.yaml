@@ -1,10 +1,22 @@
 # chart-repo: stable/grafana
-# chart-version: 3.5.10
+# chart-version: 5.0.1
 # chart-ingress: true
 # chart-pvc: grafana ReadWriteOnce 5Gi
 # chart-pdb: N 1
 
 nameOverride: grafana
+
+image:
+  repository: grafana/grafana
+  tag: 6.6.1
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
 
 adminUser: admin
 adminPassword: PASSWORD
@@ -49,10 +61,12 @@ persistence:
   enabled: true
   accessModes:
     - ReadWriteOnce
-  size: 5Gi
+  size: 10Gi
   #:EFS:storageClassName: "efs"
   existingClaim: grafana
 
+## Configure grafana datasources
+## ref: http://docs.grafana.org/administration/provisioning/#datasources
 datasources:
   datasources.yaml:
     apiVersion: 1
@@ -63,34 +77,70 @@ datasources:
         access: proxy
         isDefault: true
 
+## Configure grafana dashboard providers
+## ref: http://docs.grafana.org/administration/provisioning/#dashboards
+## `path` must be /var/lib/grafana/dashboards/<provider_name>
 dashboardProviders:
   dashboardproviders.yaml:
     apiVersion: 1
     providers:
-      - name: "default"
+      - name: 'default'
         orgId: 1
-        folder: ""
+        folder: ''
         type: file
         disableDeletion: false
         editable: true
         options:
           path: /var/lib/grafana/dashboards/default
 
+## Configure grafana dashboard to import
+## NOTE: To use dashboards you must also enable/configure dashboardProviders
+## ref: https://grafana.com/dashboards
+## dashboards per provider, use provider name as key.
 dashboards:
   default:
     kube-cluster:
-      # https://grafana.com/dashboards/10512
+      ## https://grafana.com/dashboards/10512
       gnetId: 10512
       revision: 1
       datasource: Prometheus
-    kube-deployment:
-      # https://grafana.com/dashboards/10515
-      gnetId: 10515
+    cluster-monitoring-for-kubernetes:
+      ## https://grafana.com/grafana/dashboards/10000
+      gnetId: 10000
+      revision: 1
+      datasource: Prometheus
+    kubernetes-deployment-statefulset-daemonset-metrics:
+      ## https://grafana.com/grafana/dashboards/8588
+      gnetId: 8588
+      revision: 1
+      datasource: Prometheus
+    k8s-cluster-summary:
+      ## https://grafana.com/grafana/dashboards/8685
+      gnetId: 8685
+      revision: 1
+      datasource: Prometheus
+    kubernetes-horizontal-pod-autoscaler:
+      ## https://grafana.com/grafana/dashboards/10257
+      gnetId: 10257
+      revision: 1
+      datasource: Prometheus
+    kubernetes-app-metrics:
+      ## https://grafana.com/grafana/dashboards/1471
+      gnetId: 1471
       revision: 1
       datasource: Prometheus
     nginx-ingress:
-      # url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/grafana/dashboards/nginx.json
-      # https://grafana.com/dashboards/10516
-      gnetId: 10516
-      revision: 1
-      datasource: Prometheus
+      ## K8s에서 제공하는 대시보드 가져다 사용함
+      ## https://github.com/kubernetes/ingress-nginx/blob/master/deploy/grafana/dashboards/nginx.json
+      url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/grafana/dashboards/nginx.json
+      ## 아래 설정은 K8s에서 제공하는 대시보드 설정을 그라파나 대시보드 사이트에 업로드 해서 사용하는거 같음
+      ## https://grafana.com/grafana/dashboards/10516
+      #gnetId: 10516
+      #revision: 1
+      #datasource: Prometheus
+    ## 정상 동작 안함, 일단 주석처리, 2020-02-27
+    #kube-deployment:
+      ## https://grafana.com/dashboards/10515
+      #gnetId: 10515
+      #revision: 1
+      #datasource: Prometheus
