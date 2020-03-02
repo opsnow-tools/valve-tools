@@ -49,13 +49,13 @@ server:
 
   ## Prometheus server resource requests and limits
   ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 500m
-      memory: 512Mi
+  #resources:
+    #limits:
+      #cpu: 500m
+      #memory: 512Mi
+    #requests:
+      #cpu: 500m
+      #memory: 512Mi
 
   ## Prometheus data retention period (default if not specified is 15 days)
   retention: "15d"
@@ -117,13 +117,13 @@ alertmanager:
 
   ## alertmanager resource requests and limits
   ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  resources:
-    limits:
-      cpu: 10m
-      memory: 32Mi
-    requests:
-      cpu: 10m
-      memory: 32Mi
+  #resources:
+    #limits:
+      #cpu: 10m
+      #memory: 32Mi
+    #requests:
+      #cpu: 10m
+      #memory: 32Mi
 
   persistentVolume:
     enabled: true
@@ -152,13 +152,13 @@ kubeStateMetrics:
 
   ## kube-state-metrics resource requests and limits
   ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  resources:
-    limits:
-      cpu: 10m
-      memory: 16Mi
-    requests:
-      cpu: 10m
-      memory: 16Mi
+  #resources:
+    #limits:
+      #cpu: 10m
+      #memory: 16Mi
+    #requests:
+      #cpu: 10m
+      #memory: 16Mi
 
 ## Prometheus server ConfigMap entries
 serverFiles:

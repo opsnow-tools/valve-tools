@@ -10,13 +10,13 @@ image:
   repository: grafana/grafana
   tag: 6.6.1
 
-resources:
-  limits:
-    cpu: 200m
-    memory: 256Mi
-  requests:
-    cpu: 200m
-    memory: 256Mi
+#resources:
+  #limits:
+    #cpu: 200m
+    #memory: 256Mi
+  #requests:
+    #cpu: 200m
+    #memory: 256Mi
 
 adminUser: admin
 adminPassword: PASSWORD

@@ -21,13 +21,13 @@ service:
   type: SERVICE_TYPE
   externalPort: 9090
 
-resources:
-  limits:
-    cpu: 100m
-    memory: 100Mi
-  requests:
-    cpu: 100m
-    memory: 100Mi
+#resources:
+  #limits:
+    #cpu: 100m
+    #memory: 100Mi
+  #requests:
+    #cpu: 100m
+    #memory: 100Mi
     
 ingress:
   enabled: INGRESS_ENABLED
