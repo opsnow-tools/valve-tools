@@ -746,7 +746,7 @@ helm_install() {
         _debug "yaml 파일에 '# chart-pvc:' 문자열이 있습니다."
         LIST=${SHELL_DIR}/build/${CLUSTER_NAME}/pvc-${NAME}-yaml
         echo "" > ${LIST}
-        _debug_cadelt ${LIST}
+        _debug_cat ${LIST}
         cat ${CHART} | grep '# chart-pvc:' | awk '{print $3,$4,$5}' > ${LIST}
         _debug_cat ${LIST}
         while IFS='' read -r line || [[ -n "$line" ]]; do
