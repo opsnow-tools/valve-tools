@@ -140,9 +140,8 @@ dashboards:
       #gnetId: 10516
       #revision: 1
       #datasource: Prometheus
-    ## 정상 동작 안함, 일단 주석처리, 2020-02-27
-    #kube-deployment:
+    kube-deployment:
       ## https://grafana.com/dashboards/10515
-      #gnetId: 10515
-      #revision: 1
-      #datasource: Prometheus
+      gnetId: 10515
+      revision: 1
+      datasource: Prometheus
