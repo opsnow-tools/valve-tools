@@ -1,3 +1,9 @@
+# Grafana
+## Stable chart
+https://github.com/helm/charts/tree/master/stable/grafana
+## Values.yaml
+[/charts/monitor/grafana.yaml](../charts/monitor/grafana.yaml)
+```yaml
 # chart-repo: stable/grafana
 # chart-version: 5.0.1
 # chart-ingress: true
@@ -146,3 +152,35 @@ dashboards:
       #gnetId: 10515
       #revision: 1
       #datasource: Prometheus
+```
+## Description
+* 이미지와 테그이름을 명시적으로 설정하도록 했습니다.
+* 리소스 설정을 주석처리하여 두었습니다. 필요에 따라 사용하면 됩니다.
+* Prometheus 데이터 소스를 미리 설정해 두었습니다.
+* Dashboards 7개를 미리 설정해 두었습니다.
+  * kube-cluster (기존)
+  * cluster-monitoring-for-kubernetes (신규)
+  * kubernetes-deployment-statefulset-daemonset-metrics (신규)
+  * k8s-cluster-summary (신규)
+  * kubernetes-horizontal-pod-autoscaler (신규)
+  * kubernetes-app-metrics (신규)
+  * nginx-ingress (기존)
+  * ~~kube-deployment (삭제)~~
+## Parameters
+* PASSWORD : 로그인 암호
+* G_CLIENT_ID
+* G_CLIENT_SECRET
+* G_ALLOWED_DOMAINS
+* GRAFANA_LDAP
+## Challenges
+### Dashboards 설정
+기존에 사용하던 대시보드가 정상적으로 설치되지 않아서 주석 처리했습니다.  
+SRE Lab에서 Grafana dashboard 사이트에 업로드 해 두고 사용하고 있던 대시보드 입니다.  
+```yaml
+    ## 정상 동작 안함, 일단 주석처리, 2020-02-27
+    #kube-deployment:
+      ## https://grafana.com/dashboards/10515
+      #gnetId: 10515
+      #revision: 1
+      #datasource: Prometheus
+```
