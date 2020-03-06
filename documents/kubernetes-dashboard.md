@@ -53,10 +53,8 @@ ingress:
 * enableInsecureLogin 값을 true로 설정하여 HTTPS 연결 안하도록 설정했습니다.  
 HTTPS는 ALB에서 처리하도록 valve-eks에서 설정되어 있기 때문입니다.
 ## Parameters
-* SERVICE_TYPE : 서비스 타입, valve-tools에서 세팅 해줌. ex) ClusterIP
-* INGRESS_ENABLED : Ingress 사용 여부, 기본값 : true
+* SERVICE_TYPE : 서비스 타입, valve-tools에서 세팅 해줌, ex) ClusterIP
+* INGRESS_ENABLED : Ingress 사용 여부, valve-tools에서 세팅 해줌, 기본값 : true
 * INGRESS_DOMAIN : Dashboard 접속 도메인, valve-tools에서 세팅 해줌 ex) kubernetes-dashboard-kube-system.dev.opsnow.io
 ## Challenges
-* 
-## References
-* 
+* N/A
