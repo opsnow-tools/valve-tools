@@ -15,11 +15,11 @@ controller:
   kind: Deployment
   resources:
     limits:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 200m
+      memory: 512Mi
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 200m
+      memory: 512Mi
   autoscaling:
     enabled: true
     ## 워크 노드가 설치된 AZ가 3개인 경우는 AZ 당 1개의 nginx 서버가 구성되도록 3으로 설정한다.
