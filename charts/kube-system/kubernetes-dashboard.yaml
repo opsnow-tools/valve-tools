@@ -3,6 +3,8 @@
 # chart-ingress: true
 # chart-pdb: N 1
 
+## https://github.com/helm/charts/tree/master/stable/kubernetes-dashboard
+
 nameOverride: kubernetes-dashboard
 
 # podAnnotations:
