@@ -430,7 +430,12 @@ helm_install() {
 
     # for nginx-ingress
     if [[ "${NAME}" == "nginx-ingress"* ]]; then
-        get_base_domain
+        {
+            get_base_domain
+        } || {
+            ROOT_DOMAIN="opsnow.cn"
+            BASE_DOMAIN="opsnow.cn"
+        }
 
         get_replicas ${NAMESPACE} ${NAME}-controller
         if [ "${REPLICAS}" != "" ]; then
@@ -846,8 +851,9 @@ helm_init() {
 
     create_cluster_role_binding cluster-admin ${NAMESPACE} ${ACCOUNT}
 
-    _command "helm init --upgrade --service-account=${ACCOUNT}"
-    helm init --upgrade --service-account=${ACCOUNT}
+    _command "helm init -i gcr.azk8s.cn/kubernetes-helm/tiller:v2.14.3 --upgrade --service-account=${ACCOUNT}"
+#    helm init --upgrade --service-account=${ACCOUNT}
+    helm init -i gcr.azk8s.cn/kubernetes-helm/tiller:v2.14.3 --upgrade --service-account=${ACCOUNT}
 
     # default pdb
     default_pdb "${NAMESPACE}"

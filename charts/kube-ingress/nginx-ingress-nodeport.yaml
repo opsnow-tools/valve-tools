@@ -4,12 +4,14 @@
 nameOverride: nginx-ingress
 
 controller:
+  image:
+    repository: quay.azk8s.cn/kubernetes-ingress-controller/nginx-ingress-controller
   # kind: DaemonSet
   replicaCount: 2
   autoscaling:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 3
+    minReplicas: 2
+    maxReplicas: 9
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 60
   # podAnnotations:
@@ -41,8 +43,13 @@ controller:
         prometheus.io/port: "10254"
   resources:
     limits:
-      cpu: 100m
+      cpu: 200m
       memory: 256Mi
     requests:
-      cpu: 100m
+      cpu: 200m
       memory: 256Mi
+
+defaultBackend:
+  image:
+    repository: gcr.azk8s.cn/google_containers/defaultbackend-amd64
+

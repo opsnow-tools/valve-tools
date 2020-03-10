@@ -7,9 +7,16 @@ nameOverride: efs-provisioner
 # podAnnotations:
 #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
 
+image:
+  repository: quay.azk8s.cn/external_storage/efs-provisioner
+
+busyboxImage:
+  repository: gcr.azk8s.cn/google_containers/busybox
+
 efsProvisioner:
-  efsFileSystemId: EFS_ID
-  awsRegion: AWS_REGION
+  dnsName: EFS_ID.efs.AWS_REGION.amazonaws.com.cn
+  # efsFileSystemId: EFS_ID
+  # awsRegion: AWS_REGION
   path: /shared
   provisionerName: CLUSTER_NAME/efs
   storageClass:
