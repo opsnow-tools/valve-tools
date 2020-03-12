@@ -3,6 +3,9 @@
 
 nameOverride: fluentd-elasticsearch
 
+image:
+  repository: gcr.azk8s.cn/google-containers/fluentd-elasticsearch
+
 elasticsearch:
   host: CUSTOM_HOST
   port: CUSTOM_PORT
