@@ -4,12 +4,14 @@
 nameOverride: nginx-ingress-nodeport
 
 controller:
+  image:
+    repository: QUAY/kubernetes-ingress-controller/nginx-ingress-controller
   # kind: DaemonSet
   replicaCount: 2
   autoscaling:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 3
+    minReplicas: 2
+    maxReplicas: 9
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 60
   # podAnnotations:
@@ -41,10 +43,15 @@ controller:
         prometheus.io/port: "10254"
   resources:
     limits:
-      cpu: 100m
+      cpu: 200m
       memory: 256Mi
     requests:
-      cpu: 100m
+      cpu: 200m
       memory: 256Mi
   extraArgs:
     default-ssl-certificate: kube-ingress/cert-stage-wildcard
+
+defaultBackend:
+  image:
+    repository: K8SGCR/defaultbackend-amd64
+

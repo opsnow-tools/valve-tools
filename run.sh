@@ -418,6 +418,26 @@ helm_install() {
         fi
     fi
 
+    ### RULE : docker image repository GLOBAL -> CHINA
+    # quay.io -> quay.azk8s.cn
+    # gcr.io -> gcr.azk8s.cn
+    # k8s.gcr.io -> gcr.azk8s.cn/google_containers
+    # docker.io -> dockerhub.azk8s.cn
+    if [ "${IS_CHINA}" == "true" ]; then
+        _replace "s/QUAY/quay.azk8s.cn/g" ${CHART}
+        _replace "s/K8SGCR/gcr.azk8s.cn\/google_containers/g" ${CHART}
+        _replace "s/GCR/gcr.azk8s.cn/g" ${CHART}
+        _replace "s/DOCKER/dockerhub.azk8s.cn/g" ${CHART}
+        _replace "s/#EFS_CHART_CHINA_DNS.*/dnsName: EFS_ID.efs.AWS_REGION.amazonaws.com.cn/g" ${CHART}
+    else
+        _replace "s/QUAY/quay.io/g" ${CHART}
+        _replace "s/K8SGCR/k8s.gcr.io/g" ${CHART}
+        _replace "s/GCR/gcr.io/g" ${CHART}
+        _replace "s/DOCKER/docker.io/g" ${CHART}
+        _replace "s/#EFS_CHART_EFSID.*/efsFileSystemId: EFS_ID/g" ${CHART}
+        _replace "s/#EFS_CHART_REGION.*/awsRegion: AWS_REGION/g" ${CHART}
+    fi
+
     # global
     _replace "s/AWS_REGION/${REGION}/g" ${CHART}
     _replace "s/CLUSTER_NAME/${CLUSTER_NAME}/g" ${CHART}
@@ -440,7 +460,12 @@ helm_install() {
 
     # for nginx-ingress
     if [[ "${NAME}" == "nginx-ingress"* ]]; then
-        get_base_domain
+        {
+            get_base_domain
+        } || {
+            ROOT_DOMAIN="opsnow.cn"
+            BASE_DOMAIN="opsnow.cn"
+        }
 
         get_replicas ${NAMESPACE} ${NAME}-controller
         if [ "${REPLICAS}" != "" ]; then
@@ -857,7 +882,12 @@ helm_init() {
     create_cluster_role_binding cluster-admin ${NAMESPACE} ${ACCOUNT}
 
     _command "helm init --upgrade --service-account=${ACCOUNT}"
-    helm init --upgrade --service-account=${ACCOUNT}
+    if [ "${IS_CHINA}" == "true" ]; then
+      helm init -i gcr.azk8s.cn/kubernetes-helm/tiller:v2.16.3 --upgrade --service-account=${ACCOUNT}
+    else
+      helm init --upgrade --service-account=${ACCOUNT}
+    fi
+
 
     # default pdb
     default_pdb "${NAMESPACE}"

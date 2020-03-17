@@ -8,6 +8,9 @@ nameOverride: kubernetes-dashboard
 # podAnnotations:
 #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
 
+image:
+  repository: K8SGCR/kubernetes-dashboard-amd64
+
 enableInsecureLogin: true
 
 service:
