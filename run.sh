@@ -983,10 +983,11 @@ helm_init() {
     helm version --client
 
     _command "helm init --upgrade --service-account=${ACCOUNT}"
+    TILLER_VERSION="v2.16.3"
     if [ "${IS_CHINA}" == "true" ]; then
-      helm init -i gcr.azk8s.cn/kubernetes-helm/tiller:v2.16.3 --upgrade --service-account=${ACCOUNT}
+      helm init -i gcr.azk8s.cn/kubernetes-helm/tiller:${TILLER_VERSION} --upgrade --service-account=${ACCOUNT}
     else
-      helm init --upgrade --service-account=${ACCOUNT}
+      helm init -i gcr.io/kubernetes-helm/tiller:${TILLER_VERSION}  --upgrade --service-account=${ACCOUNT}
     fi
 
     default_pdb "${NAMESPACE}"
