@@ -234,8 +234,10 @@ else
         curl -L https://storage.googleapis.com/kubernetes-helm/helm-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz
         sudo mv ${OS_NAME}-amd64/helm /usr/local/bin/helm && rm -rf ${OS_NAME}-amd64
 
-        helm repo add stable http://mirror.azure.cn/kubernetes/charts/
-        helm repo add incubator http://mirror.azure.cn/kubernetes/charts-incubator/
+        if [ "${IS_CHINA}" == "true" ]; then
+            helm repo add stable-cn http://mirror.azure.cn/kubernetes/charts/
+            helm repo add incubator-cn http://mirror.azure.cn/kubernetes/charts-incubator/
+        fi
 
         HELM="${VERSION}"
     fi
