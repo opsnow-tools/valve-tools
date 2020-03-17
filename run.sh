@@ -411,11 +411,6 @@ helm_install() {
         fi
     fi
 
-    # global
-    _replace "s/AWS_REGION/${REGION}/g" ${CHART}
-    _replace "s/CLUSTER_NAME/${CLUSTER_NAME}/g" ${CHART}
-    _replace "s/NAMESPACE/${NAMESPACE}/g" ${CHART}
-
     ### RULE : docker image repository GLOBAL -> CHINA
     # quay.io -> quay.azk8s.cn
     # gcr.io -> gcr.azk8s.cn
@@ -426,12 +421,20 @@ helm_install() {
         _replace "s/K8SGCR/gcr.azk8s.cn\/google_containers/g" ${CHART}
         _replace "s/GCR/gcr.azk8s.cn/g" ${CHART}
         _replace "s/DOCKER/dockerhub.azk8s.cn/g" ${CHART}
+        _replace "s/#EFS_CHART_CHINA_DNS.*/dnsName: EFS_ID.efs.AWS_REGION.amazonaws.com.cn/g" ${CHART}
     else
         _replace "s/QUAY/quay.io/g" ${CHART}
         _replace "s/K8SGCR/k8s.gcr.io/g" ${CHART}
         _replace "s/GCR/gcr.io/g" ${CHART}
         _replace "s/DOCKER/docker.io/g" ${CHART}
+        _replace "s/#EFS_CHART_EFSID.*/efsFileSystemId: EFS_ID/g" ${CHART}
+        _replace "s/#EFS_CHART_REGION.*/awsRegion: AWS_REGION/g" ${CHART}
     fi
+
+    # global
+    _replace "s/AWS_REGION/${REGION}/g" ${CHART}
+    _replace "s/CLUSTER_NAME/${CLUSTER_NAME}/g" ${CHART}
+    _replace "s/NAMESPACE/${NAMESPACE}/g" ${CHART}
 
     # for cert-manager
     if [ "${NAME}" == "cert-manager" ]; then

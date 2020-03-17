@@ -14,9 +14,9 @@ busyboxImage:
   repository: GCR/google_containers/busybox
 
 efsProvisioner:
-  dnsName: EFS_ID.efs.AWS_REGION.amazonaws.com.cn
-  # efsFileSystemId: EFS_ID
-  # awsRegion: AWS_REGION
+  #EFS_CHART_CHINA_DNS
+  #EFS_CHART_EFSID
+  #EFS_CHART_REGION
   path: /shared
   provisionerName: CLUSTER_NAME/efs
   storageClass:
