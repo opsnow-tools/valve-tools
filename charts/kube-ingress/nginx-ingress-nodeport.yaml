@@ -5,8 +5,10 @@ nameOverride: nginx-ingress-nodeport
 
 controller:
   image:
-    repository: quay.io/kubernetes-ingress-controller/nginx-ingress-controller
+    repository: QUAY/kubernetes-ingress-controller/nginx-ingress-controller
     tag: "0.28.0"
+  # kind: DaemonSet
+  replicaCount: 2
   ## Configures the ports the nginx-controller listens on
   containerPort:
     http: 80
@@ -141,3 +143,8 @@ controller:
   ## SSL 처리는 ELB에서 하기때문에 아래 설정은 필요 없음
   #extraArgs:
     #default-ssl-certificate: kube-ingress/cert-stage-wildcard
+
+defaultBackend:
+  image:
+    repository: K8SGCR/defaultbackend-amd64
+

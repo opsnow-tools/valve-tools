@@ -133,6 +133,12 @@ if [ ! -f ~/.aws/config ]; then
     aws configure set default.region ap-northeast-2
 fi
 
+IS_CHINA=false
+CURRENT_REGION=$(aws configure get region)
+if [ "${CURRENT_REGION}" == "cn-*" ]; then
+  IS_CHINA=true
+fi
+
 # kubectl
 echo "================================================================================"
 _result "install kubectl..."
@@ -140,16 +146,23 @@ _result "install kubectl..."
 if [ "${OS_TYPE}" == "brew" ]; then
     command -v kubectl > /dev/null || brew install kubernetes-cli
 else
-    VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
-
-    if [ "${KUBECTL}" != "${VERSION}" ] || [ "$(command -v kubectl)" == "" ]; then
-        _result " ${KUBECTL} >> ${VERSION}"
-
-        curl -LO https://storage.googleapis.com/kubernetes-release/release/${VERSION}/bin/${OS_NAME}/amd64/kubectl
+    if [ "${IS_CHINA}" == "true" ]; then
+        curl -LO https://s3.cn-north-1.amazonaws.com.cn/kops-bjs/fileRepository/kubernetes-release/release/v1.12.8/bin/${OS_NAME}/amd64/kubectl -o kubectl
         chmod +x kubectl && sudo mv kubectl /usr/local/bin/kubectl
+    else
+        VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
 
-        KUBECTL="${VERSION}"
+        if [ "${KUBECTL}" != "${VERSION}" ] || [ "$(command -v kubectl)" == "" ]; then
+            _result " ${KUBECTL} >> ${VERSION}"
+
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/${VERSION}/bin/${OS_NAME}/amd64/kubectl
+            chmod +x kubectl && sudo mv kubectl /usr/local/bin/kubectl
+
+            KUBECTL="${VERSION}"
+        fi
     fi
+
+    KUBECTL="${VERSION}"
 fi
 
 kubectl version --client --short | xargs | awk '{print $3}'
@@ -184,16 +197,23 @@ _result "install kops..."
 if [ "${OS_TYPE}" == "brew" ]; then
     command -v kops > /dev/null || brew install kops
 else
-    VERSION=$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | jq -r '.tag_name')
+    if [ "${IS_CHINA}" == "true" ]; then
+        curl -LO https://s3.cn-north-1.amazonaws.com.cn/kops-bjs/fileRepository/kops/1.12.0/${OS_NAME}/amd64/kops -o kops
+        chmod +x kops && sudo mv kops-${OS_NAME}-amd64 /usr/local/bin/kops
+    else
+        VERSION=$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | jq -r '.tag_name')
 
-    if [ "${KOPS}" != "${VERSION}" ] || [ "$(command -v kops)" == "" ]; then
-        _result " ${KOPS} >> ${VERSION}"
+        if [ "${KOPS}" != "${VERSION}" ] || [ "$(command -v kops)" == "" ]; then
+            _result " ${KOPS} >> ${VERSION}"
 
-        curl -LO https://github.com/kubernetes/kops/releases/download/${VERSION}/kops-${OS_NAME}-amd64
-        chmod +x kops-${OS_NAME}-amd64 && sudo mv kops-${OS_NAME}-amd64 /usr/local/bin/kops
+            curl -LO https://github.com/kubernetes/kops/releases/download/${VERSION}/kops-${OS_NAME}-amd64
+            chmod +x kops-${OS_NAME}-amd64 && sudo mv kops-${OS_NAME}-amd64 /usr/local/bin/kops
 
-        KOPS="${VERSION}"
+            KOPS="${VERSION}"
+        fi
     fi
+
+    KOPS="1.12.0"
 fi
 
 kops version 2>&1 | grep Version | xargs | awk '{print $2}'
@@ -213,6 +233,11 @@ else
 
         curl -L https://storage.googleapis.com/kubernetes-helm/helm-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz
         sudo mv ${OS_NAME}-amd64/helm /usr/local/bin/helm && rm -rf ${OS_NAME}-amd64
+
+        if [ "${IS_CHINA}" == "true" ]; then
+            helm repo add stable-cn http://mirror.azure.cn/kubernetes/charts/
+            helm repo add incubator-cn http://mirror.azure.cn/kubernetes/charts-incubator/
+        fi
 
         HELM="${VERSION}"
     fi

@@ -11,7 +11,7 @@ nameOverride: kubernetes-dashboard
 #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
 
 image:
-  repository: k8s.gcr.io/kubernetes-dashboard-amd64
+  repository: K8SGCR/kubernetes-dashboard-amd64
   tag: v1.10.1
 
 ## Enable possibility to skip login

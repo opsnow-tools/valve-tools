@@ -2,3 +2,6 @@
 # chart-version: 0.16.0
 
 nameOverride: kube-state-metrics
+
+image:
+  repository: QUAY/coreos/kube-state-metrics

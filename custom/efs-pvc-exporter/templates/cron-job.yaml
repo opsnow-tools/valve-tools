@@ -14,8 +14,8 @@ spec:
     spec:
       template:
         spec:
-          serviceAccountName: {{ include "fullname" . }}
           containers:
           - name: {{ .Chart.Name }}
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          serviceAccountName: {{ include "fullname" . }}
           restartPolicy: {{ .Values.restart }}

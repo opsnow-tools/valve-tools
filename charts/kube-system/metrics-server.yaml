@@ -5,7 +5,7 @@
 nameOverride: metrics-server
 
 image:
-  repository: gcr.io/google_containers/metrics-server-amd64
+  repository: GCR/google_containers/metrics-server-amd64
   tag: v0.3.6
 
 args:
