@@ -1,9 +1,23 @@
 # chart-repo: stable/prometheus-adapter
-# chart-version: v0.5.0
+# chart-version: 2.1.2
 # chart-ingress: false
 
 nameOverride: prometheus-adapter
 
+image:
+  repository: directxman12/k8s-prometheus-adapter-amd64
+  tag: v0.6.0
+
+## Url to access prometheus
 prometheus:
   url: http://prometheus-server
   port: 80
+
+#resources:
+  #requests:
+    #cpu: 100m
+    #memory: 128Mi
+  #limits:
+    #cpu: 100m
+    #memory: 128Mi
+    

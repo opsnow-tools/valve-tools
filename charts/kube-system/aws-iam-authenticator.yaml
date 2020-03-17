@@ -1,5 +1,10 @@
 # chart-repo: stable/aws-iam-authenticator
-# chart-version: latest
+# chart-version: 0.1.2
 # chart-pdb: N 1
 
 nameOverride: aws-iam-authenticator
+
+image:
+  repository: gcr.io/heptio-images/authenticator
+  tag: v0.1.0
+
