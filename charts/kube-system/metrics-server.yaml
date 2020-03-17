@@ -5,7 +5,7 @@
 nameOverride: metrics-server
 
 image:
-  repository: gcr.azk8s.cn/google_containers/metrics-server-amd64
+  repository: GCR/google_containers/metrics-server-amd64
 
 args:
   # - --logtostderr

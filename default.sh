@@ -6,6 +6,12 @@ THIS_VERSION="v0.0.0"
 
 DEBUG_MODE=true
 
+IS_CHINA=false
+CURRENT_REGION=$(aws configure get region)
+if [ "${CURRENT_REGION}" == "cn-*" ]; then
+  IS_CHINA=true
+fi
+
 CONFIG=
 CONFIG_SAVE=
 

@@ -4,4 +4,4 @@
 nameOverride: kube-state-metrics
 
 image:
-  repository: quay.azk8s.cn/coreos/kube-state-metrics
+  repository: QUAY/coreos/kube-state-metrics

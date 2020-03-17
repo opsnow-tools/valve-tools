@@ -5,7 +5,7 @@ nameOverride: nginx-ingress
 
 controller:
   image:
-    repository: quay.azk8s.cn/kubernetes-ingress-controller/nginx-ingress-controller
+    repository: QUAY/kubernetes-ingress-controller/nginx-ingress-controller
   # kind: DaemonSet
   replicaCount: 2
   autoscaling:
@@ -51,5 +51,5 @@ controller:
 
 defaultBackend:
   image:
-    repository: gcr.azk8s.cn/google_containers/defaultbackend-amd64
+    repository: K8SGCR/defaultbackend-amd64
 

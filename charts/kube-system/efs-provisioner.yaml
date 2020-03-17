@@ -8,10 +8,10 @@ nameOverride: efs-provisioner
 #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
 
 image:
-  repository: quay.azk8s.cn/external_storage/efs-provisioner
+  repository: QUAY/external_storage/efs-provisioner
 
 busyboxImage:
-  repository: gcr.azk8s.cn/google_containers/busybox
+  repository: GCR/google_containers/busybox
 
 efsProvisioner:
   dnsName: EFS_ID.efs.AWS_REGION.amazonaws.com.cn
