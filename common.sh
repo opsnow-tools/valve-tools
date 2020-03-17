@@ -40,6 +40,11 @@ _replace() {
     fi
 }
 
+_warn() {
+    echo
+    _echo "# $@" 5
+}
+
 _result() {
     echo
     _echo "# $@" 4
@@ -303,7 +308,7 @@ variables_save() {
     echo "@Field" >> ${CONFIG}
     echo "def base_domain = \"${BASE_DOMAIN}\"" >> ${CONFIG}
 
-    COUNT=$(kubectl get ing --all-namespaces | grep devops | wc -l | xargs)
+    COUNT=$(kubectl get ing --all-namespaces | grep devops | grep -v argocd | wc -l | xargs)
     if [ "x${COUNT}" == "x0" ]; then
         echo "@Field" >> ${CONFIG}
         echo "def cluster = \"${CLUSTER_NAME}\"" >> ${CONFIG}

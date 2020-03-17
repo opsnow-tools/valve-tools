@@ -14,11 +14,11 @@ Master:
   ImageTag: "2.176.2"
   resources:
     requests:
-      cpu: 250m
-      memory: 3Gi
+      cpu: 1
+      memory: 2Gi
     limits:
-      cpu: 2
-      memory: 4Gi
+      cpu: "1200m"
+      memory: 2400Mi
   # PodAnnotations:
   #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
   JavaOpts: "-Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Seoul"

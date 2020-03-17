@@ -1,7 +1,7 @@
 # chart-repo: stable/nginx-ingress
 # chart-version: 1.4.0
 
-nameOverride: nginx-ingress
+nameOverride: nginx-ingress-nodeport
 
 controller:
   image:
@@ -48,6 +48,8 @@ controller:
     requests:
       cpu: 200m
       memory: 256Mi
+  extraArgs:
+    default-ssl-certificate: kube-ingress/cert-stage-wildcard
 
 defaultBackend:
   image:

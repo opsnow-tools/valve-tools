@@ -24,7 +24,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: {{ include "fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: "{{ .Values.namespace }}"
 roleRef:
   kind: ClusterRole
   name: valve:{{ .Values.rolename }}
