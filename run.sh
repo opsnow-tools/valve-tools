@@ -770,7 +770,7 @@ helm_install() {
         _debug "yaml 파일에 '# chart-pvc:' 문자열이 있습니다."
         LIST=${SHELL_DIR}/build/${CLUSTER_NAME}/pvc-${NAME}-yaml
         echo "" > ${LIST}
-        _debug_cadelt ${LIST}
+        _debug_cat ${LIST}
         cat ${CHART} | grep '# chart-pvc:' | awk '{print $3,$4,$5}' > ${LIST}
         _debug_cat ${LIST}
         while IFS='' read -r line || [[ -n "$line" ]]; do
@@ -1615,16 +1615,21 @@ efs_delete() {
     CONFIG_SAVE=true
 
     if [ "${EFS_ID}" == "" ]; then
+        _debug "EFS_ID 값이 없어서 다음단계 진행 안함."
         return
     fi
 
     # owned
+    _command "aws efs describe-file-systems --file-system-id ${EFS_ID}"
     OWNED=$(aws efs describe-file-systems --file-system-id ${EFS_ID} | jq -r '.FileSystems[].Tags[] | values[]' | grep "kubernetes.io/cluster/${CLUSTER_NAME}")
+    _debug "OWNED="${OWNED}
     if [ "${OWNED}" == "" ]; then
         # delete mount targets
         EFS_MOUNT_TARGET_IDS=$(aws efs describe-mount-targets --file-system-id ${EFS_ID} --region ${REGION} | jq -r '.MountTargets[].MountTargetId')
+        _debug "EFS_MOUNT_TARGET_IDS="${EFS_MOUNT_TARGET_IDS}
         for MountTargetId in ${EFS_MOUNT_TARGET_IDS}; do
             echo "Deleting the mount targets"
+            _command "aws efs delete-mount-target --mount-target-id ${MountTargetId}"
             aws efs delete-mount-target --mount-target-id ${MountTargetId}
         done
 
@@ -1633,14 +1638,18 @@ efs_delete() {
 
         # delete security group for efs mount targets
         EFS_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=efs-sg.${CLUSTER_NAME}" | jq -r '.SecurityGroups[0].GroupId')
+        _debug "EFS_SG_ID="${EFS_SG_ID}
         if [ -n ${EFS_SG_ID} ]; then
             echo "Deleting the security group for mount targets"
+            _command "aws ec2 delete-security-group --group-id ${EFS_SG_ID}"
             aws ec2 delete-security-group --group-id ${EFS_SG_ID}
         fi
 
         # delete efs
+        _debug "EFS_ID="${EFS_ID}
         if [ -n ${EFS_ID} ]; then
             echo "Deleting the elastic file system"
+            _command "aws efs delete-file-system --file-system-id ${EFS_ID} --region ${REGION}"
             aws efs delete-file-system --file-system-id ${EFS_ID} --region ${REGION}
         fi
     fi
@@ -2019,7 +2028,7 @@ select_cluster_type() {
 get_cluster() {
     # config list
     LIST=${SHELL_DIR}/build/${THIS_NAME}/config-list
-    _debug "kubectl config view -o json | jq -r '.contexts[].name' | sort > ${LIST}"
+    _command "kubectl config view -o json | jq -r '.contexts[].name' | sort > ${LIST}"
     kubectl config view -o json | jq -r '.contexts[].name' | sort > ${LIST}
 
     # select

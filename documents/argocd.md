@@ -1,3 +1,9 @@
+# ArgoCD
+## Stable chart
+https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd
+## Values.yaml
+[/charts/devops/argocd.yaml](../charts/devops/argocd.yaml)
+```yaml
 # chart-repo: argo/argo-cd
 # chart-version: 1.8.3
 # chart-ingress: true
@@ -183,3 +189,21 @@ configs:
     ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
     ## 임시 암호를 "1111"로 설정함. 운영 환경 설치할때는 변경해야 함!!!
     argocdServerAdminPassword: "$2a$10$z6DA5uGyaEdG0fwxn1HLWe.YX4Yj/EZ873qu3xxBjzRk1AEPZx8ZW"
+```
+## Description
+* 이미지와 테그이름을 명시적으로 설정하도록 했습니다.
+* 리소스 설정을 주석처리하여 두었습니다. 필요에 따라 사용하면 됩니다.
+* Autoscaling 설정을 주석처리하여 두었습니다. 필요에 따라 사용하면 됩니다. 기본설정은 false 입니다.
+## Parameters
+* GITHUB_ORG : github organization name, ex) opsnow-tools
+* GITHUB_CLIENT_ID
+* GITHUB_CLIENT_SECRET
+## Challenges
+### admin 암호 설정
+argocdServerAdminPassword 속성에 admin 사용자 암호를 설정합니다.  
+기본으로 "1111"을 설정해 두었습니다.  
+htpasswd 명령어를 사용해 "1111"에 대한 hash 값을 구해서 설정합니다.  
+```bash
+htpasswd -nbBC 10 "" 1111 | tr -d ':\n' | sed 's/$2y/$2a/
+```
+이와 같은 방법으로 암호를 변경하여 설치 바랍니다.  
