@@ -6,6 +6,7 @@ nameOverride: nginx-ingress-nodeport
 controller:
   image:
     repository: QUAY/kubernetes-ingress-controller/nginx-ingress-controller
+    tag: "0.28.0"
   # kind: DaemonSet
   replicaCount: 2
   ## Configures the ports the nginx-controller listens on
@@ -13,9 +14,10 @@ controller:
     http: 80
     https: 443
   ## DaemonSet or Deployment
-  resources:
   kind: Deployment
+  resources:
     limits:
+      memory: 256Mi
       cpu: 100m
     requests:
       memory: 256Mi
