@@ -8,6 +8,12 @@ THIS_VERSION="v0.0.0"
 # 기본값은 false 입니다.
 DEBUG_MODE=false
 
+IS_CHINA=false
+CURRENT_REGION=$(aws configure get region)
+if [ "${CURRENT_REGION}" == "cn-*" ]; then
+  IS_CHINA=true
+fi
+
 CONFIG=
 CONFIG_SAVE=
 

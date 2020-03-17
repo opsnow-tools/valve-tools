@@ -5,21 +5,21 @@ nameOverride: nginx-ingress-nodeport
 
 controller:
   image:
-    repository: quay.io/kubernetes-ingress-controller/nginx-ingress-controller
-    tag: "0.28.0"
+    repository: QUAY/kubernetes-ingress-controller/nginx-ingress-controller
+  # kind: DaemonSet
+  replicaCount: 2
   ## Configures the ports the nginx-controller listens on
   containerPort:
     http: 80
     https: 443
   ## DaemonSet or Deployment
-  kind: Deployment
   resources:
+  kind: Deployment
     limits:
       cpu: 100m
-      memory: 256Mi
     requests:
-      cpu: 100m
       memory: 256Mi
+      cpu: 100m
   autoscaling:
     enabled: true
     ## 워크 노드가 설치된 AZ가 3개인 경우는 AZ 당 1개의 nginx 서버가 구성되도록 3으로 설정한다.
@@ -141,3 +141,8 @@ controller:
   ## SSL 처리는 ELB에서 하기때문에 아래 설정은 필요 없음
   #extraArgs:
     #default-ssl-certificate: kube-ingress/cert-stage-wildcard
+
+defaultBackend:
+  image:
+    repository: K8SGCR/defaultbackend-amd64
+

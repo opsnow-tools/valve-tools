@@ -451,6 +451,27 @@ helm_install() {
         # fi
     fi
 
+    ### RULE : docker image repository GLOBAL -> CHINA
+    # quay.io -> quay.azk8s.cn
+    # gcr.io -> gcr.azk8s.cn
+    # k8s.gcr.io -> gcr.azk8s.cn/google_containers
+    # docker.io -> dockerhub.azk8s.cn
+    if [ "${IS_CHINA}" == "true" ]; then
+        _replace "s/QUAY/quay.azk8s.cn/g" ${CHART}
+        _replace "s/K8SGCR/gcr.azk8s.cn\/google_containers/g" ${CHART}
+        _replace "s/GCR/gcr.azk8s.cn/g" ${CHART}
+        _replace "s/DOCKER/dockerhub.azk8s.cn/g" ${CHART}
+        _replace "s/#EFS_CHART_CHINA_DNS.*/dnsName: EFS_ID.efs.AWS_REGION.amazonaws.com.cn/g" ${CHART}
+    else
+        _replace "s/QUAY/quay.io/g" ${CHART}
+        _replace "s/K8SGCR/k8s.gcr.io/g" ${CHART}
+        _replace "s/GCR/gcr.io/g" ${CHART}
+        _replace "s/DOCKER/docker.io/g" ${CHART}
+        _replace "s/#EFS_CHART_EFSID.*/efsFileSystemId: EFS_ID/g" ${CHART}
+        _replace "s/#EFS_CHART_REGION.*/awsRegion: AWS_REGION/g" ${CHART}
+    fi
+
+    # global
     # yaml 파일에서 AWS_REGION, CLUSTER_NAME, NAMESPACE 문자열이 있으면 변경한다.
     # 방어코드로 넣어놓은거 같음. 이런 문자열이 없는 yaml 파일도 있음.
     _replace "s/AWS_REGION/${REGION}/g" ${CHART}
@@ -482,9 +503,12 @@ helm_install() {
     #   4. nginx-ingress-private
     #   5. nginx-ingress
     if [[ "${NAME}" == "nginx-ingress"* ]]; then
-
-        # Base 도메인 정보를 설정한다.
-        get_base_domain
+        {
+            get_base_domain
+        } || {
+            ROOT_DOMAIN="opsnow.cn"
+            BASE_DOMAIN="opsnow.cn"
+        }
 
         get_replicas ${NAMESPACE} ${NAME}-controller
         if [ "${REPLICAS}" != "" ]; then
@@ -959,7 +983,11 @@ helm_init() {
     helm version --client
 
     _command "helm init --upgrade --service-account=${ACCOUNT}"
-    helm init --upgrade --service-account=${ACCOUNT}
+    if [ "${IS_CHINA}" == "true" ]; then
+      helm init -i gcr.azk8s.cn/kubernetes-helm/tiller:v2.16.3 --upgrade --service-account=${ACCOUNT}
+    else
+      helm init --upgrade --service-account=${ACCOUNT}
+    fi
 
     default_pdb "${NAMESPACE}"
 

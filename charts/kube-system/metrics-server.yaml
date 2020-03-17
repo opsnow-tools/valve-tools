@@ -4,6 +4,9 @@
 
 nameOverride: metrics-server
 
+image:
+  repository: GCR/google_containers/metrics-server-amd64
+
 args:
   # - --logtostderr
   # enable this if you have self-signed certificates
