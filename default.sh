@@ -14,6 +14,8 @@ if [ "${CURRENT_REGION}" == "cn-*" ]; then
   IS_CHINA=true
 fi
 
+HARBOR_PROJECT="opsnow"
+
 CONFIG=
 CONFIG_SAVE=
 
