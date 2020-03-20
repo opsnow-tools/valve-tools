@@ -10,9 +10,11 @@ DEBUG_MODE=false
 
 IS_CHINA=false
 CURRENT_REGION=$(aws configure get region)
-if [ "${CURRENT_REGION}" == "cn-*" ]; then
+if [[ "${CURRENT_REGION}" == "cn-"* ]]; then
   IS_CHINA=true
 fi
+
+HARBOR_PROJECT="opsnow"
 
 CONFIG=
 CONFIG_SAVE=

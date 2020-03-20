@@ -353,7 +353,7 @@ config_save() {
 
 variables_domain() {
     __KEY=${1}
-    __VAL=$(kubectl get ing --all-namespaces | grep devops | grep ${__KEY} | awk '{print $3}')
+    __VAL=$(kubectl get ing --all-namespaces | grep devops | grep ${__KEY} | awk '{print $3}' | cut -d',' -f1)
 
     echo "@Field" >> ${CONFIG}
     echo "def ${__KEY} = \"${__VAL}\"" >> ${CONFIG}
@@ -383,6 +383,10 @@ variables_save() {
         variables_domain "jenkins"
         variables_domain "sonarqube"
         variables_domain "nexus"
+        variables_domain "harbor"
+
+        echo "@Field" >> ${CONFIG}
+        echo "def harbor_project = \"${HARBOR_PROJECT}\"" >> ${CONFIG}
     fi
 
     echo "@Field" >> ${CONFIG}
