@@ -1,5 +1,5 @@
 # chart-repo: stable/chartmuseum
-# chart-version: 1.9.0
+# chart-version: 2.7.1
 # chart-ingress: true
 # chart-pvc: chartmuseum ReadWriteOnce 8Gi
 
@@ -11,6 +11,7 @@ fullnameOverride: chartmuseum
 
 env:
   open:
+    ## disable all routes prefixed with /api
     DISABLE_API: false
   # open:
   #   STORAGE: amazon
@@ -27,9 +28,11 @@ service:
 ingress:
   enabled: INGRESS_ENABLED
   hosts:
-    INGRESS_DOMAIN:
-      - /
+    - name: INGRESS_DOMAIN
+      path: /
+      tls: false
   annotations:
+    ## https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: 500m
