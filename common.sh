@@ -7,6 +7,15 @@ L_PAD=""
 command -v fzf > /dev/null && FZF=true
 command -v tput > /dev/null && TPUT=true
 
+## Color     #define           Value  RGB
+## black     COLOR_BLACK       0      0, 0, 0
+## red       COLOR_RED         1      max,0,0
+## green     COLOR_GREEN       2      0,max,0
+## yellow    COLOR_YELLOW      3      max,max,0
+## blue      COLOR_BLUE        4      0,0,max
+## magenta   COLOR_MAGENTA     5      max,0,max
+## cyan      COLOR_CYAN        6      0,max,max
+## white     COLOR_WHITE       7      max,max,max
 _echo() {
     if [ "${TPUT}" != "" ] && [ "$2" != "" ]; then
         echo -e "${L_PAD}$(tput setaf $2)$1$(tput sgr0)"
@@ -219,7 +228,6 @@ get_template() {
     if [ ! -f ${__DIST} ]; then
         _error "Template does not exists. [${1}]"
     fi
-    _debug_cat ${__DIST}
 }
 
 update_tools() {
@@ -273,16 +281,16 @@ config_load() {
         _command "mkdir -p ${SHELL_DIR}/build/${CLUSTER_NAME}"
         mkdir -p ${SHELL_DIR}/build/${CLUSTER_NAME}
 
-        _command "${SHELL_DIR}/build/${CLUSTER_NAME}/config.sh"
         CONFIG=${SHELL_DIR}/build/${CLUSTER_NAME}/config.sh
-        _debug_cat ${CONFIG}
 
         _command "kubectl get secret ${THIS_NAME}-config -n default -o json | jq -r '.data.text' | base64 --decode > ${CONFIG}"
         kubectl get secret ${THIS_NAME}-config -n default -o json | jq -r '.data.text' | base64 --decode > ${CONFIG}
 
         _command "load ${THIS_NAME}-config"
-        cat ${CONFIG}
+        _debug_cat ${CONFIG}
+        _echo "$(cat ${CONFIG})" 4
 
+        _debug "${CONFIG} bash 파일을 실행한다."
         . ${CONFIG}
     fi
 }
@@ -297,8 +305,6 @@ config_save() {
     fi
 
     CONFIG=${SHELL_DIR}/build/${CLUSTER_NAME}/config.sh
-    echo "" > ${CONFIG}
-    _debug_cat ${CONFIG}
 
     echo "# ${THIS_NAME} config" > ${CONFIG}
     echo "CLUSTER_NAME=${CLUSTER_NAME}" >> ${CONFIG}
@@ -311,11 +317,9 @@ config_save() {
     echo "CLUSTER_TYPE=${CLUSTER_TYPE}" >> ${CONFIG}
 
     _command "save ${THIS_NAME}-config"
-    cat ${CONFIG}
+    _echo "$(cat ${CONFIG})" 4
 
     ENCODED=${SHELL_DIR}/build/${CLUSTER_NAME}/config.txt
-    echo "" > ${ENCODED}
-    _debug_cat ${ENCODED}
 
     if [ "${OS_NAME}" == "darwin" ]; then
         cat ${CONFIG} | base64 > ${ENCODED}
@@ -326,8 +330,6 @@ config_save() {
     _debug_cat ${ENCODED}
 
     CONFIG=${SHELL_DIR}/build/${CLUSTER_NAME}/config.yaml
-    echo "" > ${CONFIG}
-    _debug_cat ${CONFIG}
 
     get_template templates/config.yaml ${CONFIG}
     _debug "templates/config.yaml 파일을 ${CONFIG} 파일에 복사한다."
@@ -343,7 +345,9 @@ config_save() {
 
     _debug "config 설정을 default 네임스페이스에 설치한다."
     _command "kubectl apply -f ${CONFIG} -n default"
-    kubectl apply -f ${CONFIG} -n default
+    TEMP_FILE=${SHELL_DIR}/build/${THIS_NAME}/temp
+    kubectl apply -f ${CONFIG} -n default > ${TEMP_FILE}
+    _result "$(cat ${TEMP_FILE})"
 
     # 변수를 초기화 한다. 다른 곳에서 이 변수에 값을 세팅하고 이 함수를 호출하면 동작하게 하기 위해서이다.
     CONFIG_SAVE=
@@ -360,6 +364,7 @@ variables_domain() {
 }
 
 variables_save() {
+    _debug "variables_save() 함수 시작"
     CONFIG=${SHELL_DIR}/build/${CLUSTER_NAME}/variables.groovy
 
     echo "#!/usr/bin/groovy" > ${CONFIG}
@@ -393,6 +398,7 @@ variables_save() {
     echo "def slack_token = \"\"" >> ${CONFIG}
 
     echo "return this" >> ${CONFIG}
+    _debug_cat ${CONFIG}
 
     ENCODED=${SHELL_DIR}/build/${CLUSTER_NAME}/variables.txt
 
@@ -408,7 +414,12 @@ variables_save() {
     _replace "s/REPLACE-ME/groovy-variables/" ${CONFIG}
 
     sed "s/^/    /" ${ENCODED} >> ${CONFIG}
+    _debug_cat ${CONFIG}
 
     _command "kubectl apply -f ${CONFIG} -n default"
-    kubectl apply -f ${CONFIG} -n default
+    TEMP_FILE=${SHELL_DIR}/build/${THIS_NAME}/temp
+    kubectl apply -f ${CONFIG} -n default > ${TEMP_FILE}
+    _result "$(cat ${TEMP_FILE})"
+
+    _debug "variables_save() 함수 끝"
 }
