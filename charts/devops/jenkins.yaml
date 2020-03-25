@@ -1,65 +1,130 @@
 # chart-repo: stable/jenkins
-# chart-version: 0.28.10
+# chart-version: 1.9.17
 # chart-ingress: true
-# chart-pvc: jenkins ReadWriteOnce 8Gi
+# aaaaaaaaaaaachart-pvc: jenkins ReadWriteOnce 8Gi
 
 # nameOverride: jenkins
 
-rbac:
-  install: true
-
-Master:
-  AdminUser: admin
-  AdminPassword: PASSWORD
-  ImageTag: "2.176.2"
+master:
+  httpsKeyStore:
+    enable: false
+  ## Used for label app.kubernetes.io/component
+  componentName: "jenkins-master"
+  image: "jenkins/jenkins"
+  tag: "2.204.2"
+  ## Master image pull policy - Always(기본값), IfNotPresent, Never
+  imagePullPolicy: "Always"
+  adminUser: admin
+  adminPassword: PASSWORD
   resources:
     requests:
-      cpu: 1
-      memory: 2Gi
+      cpu: 1200m
+      memory: 2048Mi
     limits:
-      cpu: "1200m"
-      memory: 2400Mi
-  # PodAnnotations:
+      cpu: 1200m
+      memory: 2048Mi
+  # podAnnotations:
   #   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
-  JavaOpts: "-Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Seoul"
-  ServiceType: SERVICE_TYPE
-  HostName: INGRESS_DOMAIN
-  Ingress:
-    Annotations:
+  javaOpts: "-Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Seoul"
+  serviceType: SERVICE_TYPE
+  ingress:
+    enabled: true
+    hostName: INGRESS_DOMAIN
+    annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-  InstallPlugins:
-    # https://github.com/helm/charts/blob/master/stable/jenkins/values.yaml
-    - kubernetes:1.15.10
-    - workflow-job:2.33
+  ## https://github.com/helm/charts/blob/master/stable/jenkins/values.yaml
+  installPlugins:
+    ## https://updates.jenkins.io/download/plugins/kubernetes/   이전버전: 1.15.10
+    - kubernetes:1.24.1
+    ## https://updates.jenkins.io/download/plugins/workflow-aggregator/   변경없음
     - workflow-aggregator:2.6
-    - credentials-binding:1.20
-    # https://plugins.jenkins.io/blueocean
-    - blueocean:1.18.1
-    # https://plugins.jenkins.io/kubernetes-credentials-provider
-    - kubernetes-credentials-provider:0.12.1
-    # https://plugins.jenkins.io/pipeline-github-lib
+    ## https://updates.jenkins.io/download/plugins/credentials-binding/   이전버전: 1.20
+    - credentials-binding:1.21
+    ## https://updates.jenkins.io/download/plugins/git/    신규추가
+    - git:4.1.1
+    ## https://updates.jenkins.io/download/plugins/workflow-job/   이전버전: 2.33
+    - workflow-job:2.36
+    ## https://updates.jenkins.io/download/plugins/workflow-cps/     신규추가
+    - workflow-cps:2.80
+    ## https://plugins.jenkins.io/blueocean   이전버전: 1.18.1  (1.22.0 버전으로 올리면 에러 발생함)
+    - blueocean:1.21.0
+    ## https://plugins.jenkins.io/kubernetes-credentials-provider   이전버전: 0.12.1
+    - kubernetes-credentials-provider:0.13
+    ## https://plugins.jenkins.io/pipeline-github-lib     변경없음
     - pipeline-github-lib:1.0
-    # https://plugins.jenkins.io/active-directory
-    - active-directory:2.12
-    # https://plugins.jenkins.io/role-strategy
-    - role-strategy:2.10
-    # https://plugins.jenkins.io/ldap
-    - ldap:1.20
-    # https://plugins.jenkins.io/google-login
-    - google-login:1.4
+    ## https://plugins.jenkins.io/active-directory      이전버전: 2.12
+    - active-directory:2.16
+    ## https://plugins.jenkins.io/role-strategy       이전버전: 2.10
+    - role-strategy:2.16
+    ## https://plugins.jenkins.io/ldap     이전버전: 1.20
+    - ldap:1.21
+    ## https://plugins.jenkins.io/google-login     이전버전: 1.4
+    - google-login:1.6
   # -- jenkins-jobs -- start -- see: jenkins/jobs.sh #
   # -- jenkins-jobs -- end -- #
 
-# Agent:
-#   Enabled: true
-#   Image: quay.io/nalbam/jnlp-slave
-#   ImageTag: latest
-#   AlwaysPullImage: true
+## 기존에는 기본 설정이 적용되도록 되어 있었음
+agent:
+  enabled: true
+  image: "jenkins/jnlp-slave"
+  tag: "3.27-1"
+  ## name of the secret to be used for image pulling
+  #imagePullSecretName:
+  componentName: "jenkins-slave"
+  resources:
+    requests:
+      cpu: "512m"
+      memory: "512Mi"
+    limits:
+      cpu: "512m"
+      memory: "512Mi"
+  ## You may want to change this to true while testing a new image
+  alwaysPullImage: false
+  ## Controls how agent pods are retained after the Jenkins build completes
+  ## Possible values: Always, Never(기본값), OnFailure
+  podRetention: "OnFailure"
+  ## Max number of spawned agent
+  containerCap: 10
+  ## Pod name
+  podName: "default"
+  ## Allows the Pod to remain active for reuse until the configured number of
+  ## minutes has passed since the last step was executed on it. (기본값 : 0)
+  idleMinutes: 1
+  ## Timeout in seconds for an agent to be online
+  slaveConnectTimeout: 100
 
-Persistence:
-  Enabled: true
-  AccessMode: ReadWriteOnce
-  Size: 8Gi
-  #:EFS:StorageClass: "efs"
-  ExistingClaim: jenkins
+persistence:
+  enabled: true
+  accessMode: "ReadWriteOnce"
+  size: "8Gi"
+  ## efs를 사용하지 않고, 기존 pvc를 사용하지 않도록 일단 주석 처리함, 재설치 하면서 테스트를 해야 하는데 이전 설정이 적용됨.
+  #aaaaaa:EFS:StorageClass: "efs"
+  #aaaaaaexistingClaim: jenkins
+
+rbac:
+  ## Whether RBAC resources are created. default true.
+  create: true
+  ## Whether the Jenkins service account should be able to read Kubernetes secrets. default false.
+  readSecrets: false
+
+serviceAccount:
+  create: true
+  ## The name of the service account is autogenerated by default
+  #name:
+  #annotations: {}
+
+serviceAccountAgent:
+  ## Specifies whether a ServiceAccount should be created
+  create: false
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the fullname template
+  #name:
+  #annotations: {}
+
+## Backup cronjob configuration
+## Ref: https://github.com/maorfr/kube-tasks
+backup:
+  ## Backup must use RBAC
+  ## So by enabling backup you are enabling RBAC specific for backup
+  enabled: false
