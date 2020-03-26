@@ -327,9 +327,6 @@ charts_menu() {
     _debug "NAMESPACE="$NAMESPACE
 
     LIST=${SHELL_DIR}/build/${CLUSTER_NAME}/charts-list
-    echo "" > ${LIST}
-    _debug_cat ${LIST}
-
     _debug "${SHELL_DIR}/charts/${NAMESPACE} 폴더 아래의 파일 목록을 조회해서(파일이름에 backup 문자열이 있으면 제외) 확장자(.yaml)를 삭제한 목록(문자열)을 charts-list 파일에 저장한다."
     ls ${SHELL_DIR}/charts/${NAMESPACE} | grep -v backup | sort | sed 's/.yaml//' > ${LIST}
     _debug_cat ${LIST}
@@ -381,8 +378,6 @@ helm_install() {
 
     # helm chart
     CHART=${SHELL_DIR}/build/${CLUSTER_NAME}/helm-${NAME}.yaml
-    echo "" > ${CHART}
-    _debug_cat ${CHART}
 
     _debug "charts/${NAMESPACE}/${NAME}.yaml 파일을 ${CHART} 파일로 복사합니다."
     _debug_cat charts/${NAMESPACE}/${NAME}.yaml
@@ -769,8 +764,6 @@ helm_install() {
     if [ "x${COUNT}" != "x0" ]; then
         _debug "yaml 파일에 '# chart-pvc:' 문자열이 있습니다."
         LIST=${SHELL_DIR}/build/${CLUSTER_NAME}/pvc-${NAME}-yaml
-        echo "" > ${LIST}
-        _debug_cat ${LIST}
         cat ${CHART} | grep '# chart-pvc:' | awk '{print $3,$4,$5}' > ${LIST}
         _debug_cat ${LIST}
         while IFS='' read -r line || [[ -n "$line" ]]; do
@@ -810,7 +803,10 @@ helm_install() {
     PDB_MIN=$(cat ${CHART} | grep '# chart-pdb:' | awk '{print $3}')
     PDB_MAX=$(cat ${CHART} | grep '# chart-pdb:' | awk '{print $4}')
     if [ "${PDB_MIN}" != "" ] || [ "${PDB_MAX}" != "" ]; then
+        _debug "'# chart-pdb:' 문자열 있음"
         create_pdb ${NAMESPACE} ${NAME} ${PDB_MIN:-N} ${PDB_MAX:-N}
+    else
+        _debug "'# chart-pdb:' 문자열 없음"
     fi
 
     _command "helm history ${NAME}"
@@ -2044,7 +2040,9 @@ get_cluster() {
     mkdir -p ${SHELL_DIR}/build/${CLUSTER_NAME}
 
     _command "kubectl config use-context ${CLUSTER_NAME}"
-    kubectl config use-context ${CLUSTER_NAME}
+    TEMP_FILE=${SHELL_DIR}/build/${THIS_NAME}/temp
+    kubectl config use-context ${CLUSTER_NAME} > ${TEMP_FILE}
+    _result "$(cat ${TEMP_FILE})"
 }
 
 get_elb_domain() {
@@ -2387,14 +2385,23 @@ get_base_domain() {
 
     # base domain을 설정한다.
     if [ ! -z ${ROOT_DOMAIN} ]; then
+        _debug "PREV_ROOT_DOMAIN="${PREV_ROOT_DOMAIN}
+        _debug "ROOT_DOMAIN="${ROOT_DOMAIN}
+
         if [ "${PREV_ROOT_DOMAIN}" != "" ] && [ "${ROOT_DOMAIN}" == "${PREV_ROOT_DOMAIN}" ]; then
+            _debug "PREV_ROOT_DOMAIN 값이 세팅되어 있고, ROOT_DOMAIN 값과 PREV_ROOT_DOMAIN 값이 동일하면 PREV_BASE_DOMAIN 값을 Default 값으로 설정합니다."
             DEFAULT="${PREV_BASE_DOMAIN}"
         else
+            _debug "PREV_ROOT_DOMAIN 값이 없습니다. 클러스터 이름(ex, seoul-sre-jaden-eks)에서 3번째 문자 + "." + ROOT_DOMAIN 값을 Default 값으로 설정합니다."
             _debug "CLUSTER_NAME="${CLUSTER_NAME}
-            WORD=$(echo ${CLUSTER_NAME} | cut -d'.' -f1)
+            _debug "echo ${CLUSTER_NAME} | cut -d'-' -f3"
+            WORD=$(echo ${CLUSTER_NAME} | cut -d'-' -f3)
+            _debug "WORD=${WORD}"
             DEFAULT="${WORD}.${ROOT_DOMAIN}"
+            _debug "DEFAULT="${DEFAULT}
         fi
 
+        _debug "도메인 설정 시 Route53 호스팅영역 > 레코드세트 목록 참고하여 설정해야 합니다."
         question "Enter your ingress domain, Route53 호스팅영역 > 레코드세트 목록 참고 [${DEFAULT}] : "
         _debug "ANSWER="${ANSWER}
 
@@ -2565,14 +2572,15 @@ waiting_pod() {
 
     _NS=${1}
     _NM=${2}
-    SEC=${3:-20}
+    SEC=${3:-100}
 
     #kubectl get pod -n ${_NS} | head -1
 
     POD=${SHELL_DIR}/build/${THIS_NAME}/waiting-pod
 
-    _debug "pod 정보를 조회한다. Running 상태인지 확인하기 위해서. 최대 20번 체크한다. 5초간 Sleep."
+    _debug "pod 정보를 조회한다. Running 상태인지 확인하기 위해서. 최대 ${SEC}번 체크한다. 5초간 Sleep."
     _debug "kubectl get pod -n ${_NS} | grep ${_NM} | head -1 > ${POD}"
+    _command "kubectl get pod -n ${_NS} | grep ${_NM}"
     IDX=0
     while true; do
         kubectl get pod -n ${_NS} | grep ${_NM} | head -1 > ${POD}
