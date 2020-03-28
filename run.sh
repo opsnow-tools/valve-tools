@@ -812,8 +812,12 @@ helm_install() {
     _command "helm history ${NAME}"
     helm history ${NAME}
 
-    # waiting 2
-    waiting_pod "${NAMESPACE}" "${NAME}"
+    if [ "${NAME}" == "aws-iam-authenticator" ]; then
+        # aws-iam-authenticator은 daemonset으로 설치됨.
+        waiting_daemonset "${NAMESPACE}" "${NAME}"
+    else
+        waiting_pod "${NAMESPACE}" "${NAME}"
+    fi
 
     _command "kubectl get node,deploy,pod,svc,pvc,pv,ing -n ${NAMESPACE} | grep ${NAME}"
     kubectl get node,deploy,pod,svc,pvc,pv,ing -n ${NAMESPACE} | grep ${NAME}
@@ -2574,13 +2578,16 @@ waiting_pod() {
     _NM=${2}
     SEC=${3:-100}
 
-    #kubectl get pod -n ${_NS} | head -1
-
     POD=${SHELL_DIR}/build/${THIS_NAME}/waiting-pod
 
     _debug "pod 정보를 조회한다. Running 상태인지 확인하기 위해서. 최대 ${SEC}번 체크한다. 5초간 Sleep."
     _debug "kubectl get pod -n ${_NS} | grep ${_NM} | head -1 > ${POD}"
     _command "kubectl get pod -n ${_NS} | grep ${_NM}"
+
+    # Title을 출력한다.
+    kubectl get pod -n ${_NS} | head -1 > ${POD}
+    cat ${POD}
+
     IDX=0
     while true; do
         kubectl get pod -n ${_NS} | grep ${_NM} | head -1 > ${POD}
@@ -2608,6 +2615,46 @@ waiting_pod() {
     done
 
     _debug "waiting_pod() 함수 끝"
+}
+
+waiting_daemonset() {
+    _debug "waiting_daemonset() 함수 시작"
+
+    _NS=${1}
+    _NM=${2}
+    SEC=${3:-100}
+
+    DAEMONSET=${SHELL_DIR}/build/${THIS_NAME}/waiting-daemonset
+
+    _debug "daemonset 정보를 조회한다. Running 상태인지 확인하기 위해서. 최대 ${SEC}번 체크한다. 5초간 Sleep."
+    _debug "kubectl get daemonset -n ${_NS} | grep ${_NM} | head -1 > ${DAEMONSET}"
+    _command "kubectl get daemonset -n ${_NS} | grep ${_NM}"
+
+    # Title을 출력한다.
+    kubectl get daemonset -n ${_NS} | head -1 > ${DAEMONSET}
+    cat ${DAEMONSET}
+
+    IDX=0
+    while true; do
+        kubectl get daemonset -n ${_NS} | grep ${_NM} | head -1 > ${DAEMONSET}
+        cat ${DAEMONSET}
+
+        DESIRED=$(cat ${DAEMONSET} | awk '{print $2}')
+        READY=$(cat ${DAEMONSET} | awk '{print $4}')
+
+        if [ "x${DESIRED}" == "x${READY}" ]; then
+            _result "${_NM} daemonset installed successfully."
+            break
+        elif [ "x${IDX}" == "x${SEC}" ]; then
+            _result "Timeout"
+            break
+        fi
+
+        IDX=$(( ${IDX} + 1 ))
+        sleep 5
+    done
+
+    _debug "waiting_daemonset() 함수 끝"
 }
 
 # entry point
