@@ -132,12 +132,6 @@ if [ ! -f ~/.aws/config ]; then
     aws configure set default.region ap-northeast-2
 fi
 
-IS_CHINA=false
-CURRENT_REGION=$(aws configure get region)
-if [ "${CURRENT_REGION}" == "cn-*" ]; then
-  IS_CHINA=true
-fi
-
 # kubectl
 echo "================================================================================"
 _result "install kubectl..."
