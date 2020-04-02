@@ -270,6 +270,11 @@ __   ____ _| |_   _____      | |_ ___   ___ | |___
     if [ "${DEBUG_MODE}" == "true" ]; then
         _echo  "Running debug mode" 4
     fi
+
+    if [ "${IS_CHINA}" == "true" ]; then
+        _echo  "Running in china" 4
+    fi
+
 }
 
 config_load() {
