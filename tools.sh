@@ -5,7 +5,6 @@ DATE=
 KUBECTL=
 KOPS=
 HELM=
-DRAFT=
 GUARD=
 
 mkdir -p ~/.valve
@@ -231,11 +230,21 @@ else
     if [ "${HELM}" != "${VERSION}" ] || [ "$(command -v helm)" == "" ]; then
         _result " ${HELM} >> ${VERSION}"
 
-        curl -L https://storage.googleapis.com/kubernetes-helm/helm-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz
+        if [ "${IS_CHINA}" == "true" ]; then
+            _command "curl -L http://mirror.azure.cn/kubernetes/helm/helm-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz"
+            curl -L http://mirror.azure.cn/kubernetes/helm/helm-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz
+        else
+            _command "curl -L https://storage.googleapis.com/kubernetes-helm/helm-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz"
+            curl -L https://storage.googleapis.com/kubernetes-helm/helm-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz
+        fi
+
+        _command "sudo mv ${OS_NAME}-amd64/helm /usr/local/bin/helm && rm -rf ${OS_NAME}-amd64"
         sudo mv ${OS_NAME}-amd64/helm /usr/local/bin/helm && rm -rf ${OS_NAME}-amd64
 
         if [ "${IS_CHINA}" == "true" ]; then
+            _command "helm repo add stable-cn http://mirror.azure.cn/kubernetes/charts/"
             helm repo add stable-cn http://mirror.azure.cn/kubernetes/charts/
+            _command "helm repo add incubator-cn http://mirror.azure.cn/kubernetes/charts-incubator/"
             helm repo add incubator-cn http://mirror.azure.cn/kubernetes/charts-incubator/
         fi
 
@@ -246,27 +255,27 @@ fi
 helm version --client --short | xargs | awk '{print $2}' | cut -d'+' -f1
 
 # draft
-echo "================================================================================"
-_result "install draft..."
-
-if [ "${OS_TYPE}" == "brew" ]; then
-    if [ "$(command -v draft)" == "" ]; then
-        brew tap azure/draft && brew install azure/draft/draft
-    fi
-else
-    VERSION=$(curl -s https://api.github.com/repos/Azure/draft/releases/latest | jq -r '.tag_name')
-
-    if [ "${DRAFT}" != "${VERSION}" ] || [ "$(command -v draft)" == "" ]; then
-        _result " ${DRAFT} >> ${VERSION}"
-
-        curl -L https://azuredraft.blob.core.windows.net/draft/draft-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz
-        sudo mv ${OS_NAME}-amd64/draft /usr/local/bin/draft && rm -rf ${OS_NAME}-amd64
-
-        DRAFT="${VERSION}"
-    fi
-fi
-
-draft version --short | xargs | cut -d'+' -f1
+# echo "================================================================================"
+# _result "install draft..."
+#
+# if [ "${OS_TYPE}" == "brew" ]; then
+#     if [ "$(command -v draft)" == "" ]; then
+#         brew tap azure/draft && brew install azure/draft/draft
+#     fi
+# else
+#     VERSION=$(curl -s https://api.github.com/repos/Azure/draft/releases/latest | jq -r '.tag_name')
+#
+#     if [ "${DRAFT}" != "${VERSION}" ] || [ "$(command -v draft)" == "" ]; then
+#         _result " ${DRAFT} >> ${VERSION}"
+#
+#         curl -L https://azuredraft.blob.core.windows.net/draft/draft-${VERSION}-${OS_NAME}-amd64.tar.gz | tar xz
+#         sudo mv ${OS_NAME}-amd64/draft /usr/local/bin/draft && rm -rf ${OS_NAME}-amd64
+#
+#         DRAFT="${VERSION}"
+#     fi
+# fi
+#
+# draft version --short | xargs | cut -d'+' -f1
 
 # aws-iam-authenticator
 echo "================================================================================"
@@ -330,7 +339,6 @@ KUBECTL="${KUBECTL}"
 TERRAFORM="${TERRAFORM}"
 KOPS="${KOPS}"
 HELM="${HELM}"
-DRAFT="${DRAFT}"
 AWS_AUTH="${AWS_AUTH}"
 GUARD="${GUARD}"
 EOF
