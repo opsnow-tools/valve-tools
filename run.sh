@@ -31,7 +31,7 @@ prepare() {
     command -v helm > /dev/null    || export NEED_TOOL=helm
 
     if [ ! -z ${NEED_TOOL} ]; then
-        question "Do you want to install the required tools? (awscli,kubectl,helm...) [Y/n] : "
+        question "Do you want to install the required tools? (awscli,kubectl,helm,git,jq) [Y/n] : "
 
         if [ "${ANSWER:-Y}" == "Y" ]; then
             ${SHELL_DIR}/tools.sh
