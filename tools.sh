@@ -122,7 +122,7 @@ _result "install aws-cli..."
 if [ "${OS_TYPE}" == "brew" ]; then
     command -v aws > /dev/null || brew install awscli
 else
-    pip3 install --upgrade awscli
+    pip install --upgrade awscli
 fi
 
 aws --version | xargs
