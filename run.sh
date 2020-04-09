@@ -815,6 +815,12 @@ helm_install() {
     if [ "${NAME}" == "aws-iam-authenticator" ]; then
         # aws-iam-authenticator은 daemonset으로 설치됨.
         waiting_daemonset "${NAMESPACE}" "${NAME}"
+    elif [ "${NAME}" == "elasticsearch-snapshot" ]; then
+        # elasticsearch-snapshot은 cronjob으로 설치됨.
+        waiting_cronjob "${NAMESPACE}" "${NAME}"
+    elif [ "${NAME}" == "efs-pvc-exporter" ]; then
+        # efs-pvc-exporter은 cronjob으로 설치됨.
+        waiting_cronjob "${NAMESPACE}" "${NAME}"
     else
         waiting_pod "${NAMESPACE}" "${NAME}"
     fi
@@ -2655,6 +2661,46 @@ waiting_daemonset() {
     done
 
     _debug "waiting_daemonset() 함수 끝"
+}
+
+waiting_cronjob() {
+    _debug "waiting_cronjob() 함수 시작"
+
+    _NS=${1}
+    _NM=${2}
+    SEC=${3:-100}
+
+    CRONJOB=${SHELL_DIR}/build/${THIS_NAME}/waiting-cronjob
+
+    _debug "cronjob 정보를 조회한다. Running 상태인지 확인하기 위해서. 최대 ${SEC}번 체크한다. 5초간 Sleep."
+    _debug "kubectl get cronjob -n ${_NS} | grep ${_NM} | head -1 > ${CRONJOB}"
+    _command "kubectl get cronjob -n ${_NS} | grep ${_NM}"
+
+    # Title을 출력한다.
+    kubectl get cronjob -n ${_NS} | head -1 > ${CRONJOB}
+    cat ${CRONJOB}
+
+    IDX=0
+    while true; do
+        kubectl get cronjob -n ${_NS} | grep ${_NM} | head -1 > ${CRONJOB}
+        cat ${CRONJOB}
+
+        CRONJOBNAME=$(cat ${CRONJOB} | awk '{print $1}')
+        _debug "CRONJOBNAME=${CRONJOBNAME}"
+
+        if [ "x${CRONJOBNAME}" == "x${_NM}" ]; then
+            _result "${_NM} cronjob installed successfully."
+            break
+        elif [ "x${IDX}" == "x${SEC}" ]; then
+            _result "Timeout"
+            break
+        fi
+
+        IDX=$(( ${IDX} + 1 ))
+        sleep 5
+    done
+
+    _debug "waiting_cronjob() 함수 끝"
 }
 
 # entry point
