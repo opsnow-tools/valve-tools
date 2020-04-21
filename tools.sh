@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. ./default.sh
+
 # version
 DATE=
 KUBECTL=
