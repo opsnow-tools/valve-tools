@@ -1,5 +1,5 @@
 # chart-repo: stable/cluster-autoscaler
-# chart-version: 6.5.0
+# chart-version: 0.12.1
 # chart-node: master
 
 nameOverride: cluster-autoscaler
@@ -9,15 +9,11 @@ nameOverride: cluster-autoscaler
 
 image:
   repository: K8SGCR/cluster-autoscaler
-  tag: v1.14.6
 
-## Only cloudProvider `aws` and `gce` are supported by auto-discovery at this time
-## AWS: Set tags as described in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
 autoDiscovery:
   enabled: true
   clusterName: CLUSTER_NAME
 
-## Currently only gce, aws, azure spotinst are supported
 cloudProvider: aws
 awsRegion: AWS_REGION
 
@@ -41,8 +37,5 @@ extraArgs:
 sslCertPath: /etc/ssl/certs/ca-bundle.crt
 
 rbac:
-  ## If true, create & use RBAC resources
   create: true
-  ## If true, create & use Pod Security Policy resources
-  ## https://kubernetes.io/docs/concepts/policy/pod-security-policy/
   pspEnabled: true
