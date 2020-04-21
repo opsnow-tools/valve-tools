@@ -1,5 +1,5 @@
 # chart-repo: stable/prometheus
-# chart-version: 10.4.0
+# chart-version: 8.9.1
 # chart-ingress: false
 # chart-pvc: prometheus-server ReadWriteOnce 8Gi
 # chart-pvc: prometheus-alertmanager ReadWriteOnce 2Gi
@@ -7,14 +7,8 @@
 nameOverride: prometheus
 
 server:
-  ## Prometheus server container image
-  image:
-    repository: prom/prometheus
-    tag: v2.16.0
-
   #:ING:service:
   #:ING:  type: SERVICE_TYPE
-
   #:ING:ingress:
   #:ING:  enabled: INGRESS_ENABLED
   #:ING:  annotations:
@@ -22,81 +16,18 @@ server:
   #:ING:    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   #:ING:  hosts:
   #:ING:    - INGRESS_DOMAIN
-
-  ## PodDisruptionBudget settings
-  ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
-  #podDisruptionBudget:
-    #enabled: false
-    #maxUnavailable: 1
-
-  ## Use a StatefulSet if replicaCount needs to be greater than 1 (see below)
-  #replicaCount: 1
-
-  #statefulSet:
-    ## If true, use a statefulset instead of a deployment for pod management.
-    ## This allows to scale replicas to more than 1 pod
-    #enabled: false
-
-    #annotations: {}
-    #labels: {}
-    #podManagementPolicy: OrderedReady
-
-    ## Alertmanager headless service to use for the statefulset
-    #headless:
-      #annotations: {}
-      #labels: {}
-      #servicePort: 80
-
-  ## Prometheus server resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  #resources:
-    #limits:
-      #cpu: 500m
-      #memory: 512Mi
-    #requests:
-      #cpu: 500m
-      #memory: 512Mi
-
-  ## Prometheus data retention period (default if not specified is 15 days)
   retention: "15d"
-
   persistentVolume:
-    ## If true, Prometheus server will create/use a Persistent Volume Claim
-    ## If false, use emptyDir
     enabled: true
-
-    ## Prometheus server data Persistent Volume access modes
-    ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
     accessModes:
       - ReadWriteOnce
-
     size: 8Gi
-
-    ## Prometheus server data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is set, 
-    ## choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
     #:EFS:storageClass: "efs"
-
-    ## Prometheus server data Persistent Volume existing claim name
-    ## Requires server.persistentVolume.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
     existingClaim: prometheus-server
 
 alertmanager:
-  ## If false, alertmanager will not be installed
-  enabled: true
-
-  ## alertmanager container image
-  image:
-    repository: prom/alertmanager
-    tag: v0.20.0
-
   #:ING:service:
   #:ING:  type: SERVICE_TYPE
-
   #:ING:ingress:
   #:ING:  enabled: INGRESS_ENABLED
   #:ING:  annotations:
@@ -104,27 +35,6 @@ alertmanager:
   #:ING:    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   #:ING:  hosts:
   #:ING:    - alertmanager-INGRESS_DOMAIN
-
-  ## Use a StatefulSet if replicaCount needs to be greater than 1 (see below)
-  #replicaCount: 1
-
-  statefulSet:
-    ## If true, use a statefulset instead of a deployment for pod management.
-    ## This allows to scale replicas to more than 1 pod
-    enabled: false
-
-    podManagementPolicy: OrderedReady
-
-  ## alertmanager resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  #resources:
-    #limits:
-      #cpu: 10m
-      #memory: 32Mi
-    #requests:
-      #cpu: 10m
-      #memory: 32Mi
-
   persistentVolume:
     enabled: true
     accessModes:
@@ -135,37 +45,14 @@ alertmanager:
 
 kubeStateMetrics:
   ## If false, kube-state-metrics will not be installed
+  ##
   enabled: KUBE_STATE_METRICS
 
-  ## kube-state-metrics container image
-  image:
-    repository: quay.io/coreos/kube-state-metrics
-    tag: v1.9.5
 
-  replicaCount: 1
-
-  ## PodDisruptionBudget settings
-  ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
-  #podDisruptionBudget:
-    #enabled: false
-    #maxUnavailable: 1
-
-  ## kube-state-metrics resource requests and limits
-  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  #resources:
-    #limits:
-      #cpu: 10m
-      #memory: 16Mi
-    #requests:
-      #cpu: 10m
-      #memory: 16Mi
-
-## Prometheus server ConfigMap entries
 serverFiles:
-
   ## Alerts configuration
   ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
-  alerting_rules.yml:
+  alerts:
     groups:
       - name: InstanceCountChanged
         rules:
@@ -209,6 +96,7 @@ serverFiles:
             annotations:
               summary: 'High Memory Usage(> 90%)'
               description: 'The memory usage of the instance({{ $labels.instance }}) has exceeds 90 percent for more than 5 minutes.'
+
       - name: PodCrashingLooping
         rules:
           - alert: PodCrashingLooping
@@ -220,6 +108,7 @@ serverFiles:
             annotations:
               summary: "Pod Crash Looping(> 30m)"
               description: 'Namespace : {{ $labels.namespace }} Pod : {{ $labels.pod }} -- crash {{ $value }} times'
+
       - name: KubeNodeNotReady
         rules:
           - alert: KubeNodeNotReady
@@ -231,6 +120,7 @@ serverFiles:
             annotations:
               summary: "Kube Node Fail :  {{ $labels.condition }}"
               description: "Node {{ $labels.node }} is failed. Check node!!"
+
       - name: AvgResponseTime
         rules:
           - alert: AvgResponseTime
@@ -242,6 +132,7 @@ serverFiles:
             annotations:
               summary: "Average Response Time(> 5s)"
               description: "{{ $labels.host }}'s Average Response Time is over 5sec"
+
       - name: HPAMaxUsage
         rules:
           - alert: HPAMaxUsage
@@ -254,16 +145,11 @@ serverFiles:
               summary: "HPA Max Usage"
               description: "{{ $labels.hpa }} is using HPA Max."
 
-  ## Records configuration
-  ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/
-  #recording_rules.yml: {}
-
-## alertmanager ConfigMap entries
-## https://prometheus.io/docs/alerting/configuration/
 alertmanagerFiles:
   alertmanager.yml:
     global:
       slack_api_url: 'https://hooks.slack.com/services/SLACK_TOKEN'
+
     receivers:
       - name: default-receiver
         slack_configs:
@@ -286,16 +172,9 @@ alertmanagerFiles:
             fallback: '{{ template "slack.default.fallback" . }}'
             icon_emoji: '{{ template "slack.default.iconemoji" . }}'
             icon_url: '{{ template "slack.default.iconurl" }}'
+
     route:
-      ## How long to initially wait to send a notification for a group
-      ## of alerts. Allows to wait for an inhibiting alert to arrive or collect
-      ## more initial alerts for the same group. (Usually ~0s to few minutes.)
       group_wait: 10s
-      ## How long to wait before sending a notification about new alerts that
-      ## are added to a group of alerts for which an initial notification has
-      ## already been sent. (Usually ~5m or more.)
       group_interval: 1m
       receiver: default-receiver
-      ## How long to wait before sending a notification again if it has already
-      ## been sent successfully for an alert. (Usually ~3h or more).
       repeat_interval: 8h
