@@ -41,7 +41,7 @@ elasticsearch:
   bufferChunkLimit: "8M"
   bufferQueueLimit: 8
   hosts: ["CUSTOM_HOST:CUSTOM_PORT"]
-  logstashPrefix: "logstash-andy"
+  logstashPrefix: "logstash"
   path: ""
   scheme: "https"
   sslVerify: true
