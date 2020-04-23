@@ -1,50 +1,61 @@
-# chart-repo: stable/fluentd-elasticsearch
-# chart-version: 2.0.7
+# chart-repo: kiwigrid/fluentd-elasticsearch
+# chart-version: 8.0.0
+
+## https://github.com/kiwigrid/helm-charts/tree/master/charts/fluentd-elasticsearch
 
 nameOverride: fluentd-elasticsearch
 
 image:
-  repository: GCR/google-containers/fluentd-elasticsearch
+  repository: quay.io/fluentd_elasticsearch/fluentd
+
+## If using AWS Elasticsearch, all requests to ES need to be signed regardless of whether
+## one is using Cognito or not. By setting this to true, this chart will install a sidecar
+## proxy that takes care of signing all requests being sent to the AWS ES Domain.
+awsSigningSidecar:
+  enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+  network:
+    port: 8080
+    address: localhost
+    remoteReadTimeoutSeconds: 15
+  image:
+    repository: abutaha/aws-es-proxy
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+resources:
+  limits:
+    cpu: 100m
+    memory: 500Mi
+  requests:
+    cpu: 100m
+    memory: 200Mi
 
 elasticsearch:
-  host: CUSTOM_HOST
-  port: CUSTOM_PORT
-  buffer_chunk_limit: 8M
-  buffer_queue_limit: 8
-  # logstash_prefix: 'logstash'
+  bufferChunkLimit: "8M"
+  bufferQueueLimit: 8
+  hosts: ["CUSTOM_HOST:CUSTOM_PORT"]
+  logstashPrefix: "logstash-andy"
+  path: ""
+  scheme: "https"
+  sslVerify: true
+  sslVersion: "TLSv1_2"
+  outputType: "elasticsearch"
+  typeName: "_doc"
+  logLevel: "info"
 
 configMaps:
-  output.conf: |
-    # Enriches records with Kubernetes metadata
-    <filter kubernetes.**>
-      @type kubernetes_metadata
-    </filter>
-    <match **>
-      @id elasticsearch
-      @type elasticsearch
-      @log_level info
-      include_tag_key true
-      type_name _doc
-      host "#{ENV['OUTPUT_HOST']}"
-      port "#{ENV['OUTPUT_PORT']}"
-      scheme "#{ENV['OUTPUT_SCHEME']}"
-      ssl_version "#{ENV['OUTPUT_SSL_VERSION']}"
-      logstash_format true
-      logstash_prefix "#{ENV['LOGSTASH_PREFIX']}"
-      reconnect_on_error true
-      reload_connections false
-      reload_on_failure false
-      <buffer>
-        @type file
-        path /var/log/fluentd-buffers/kubernetes.system.buffer
-        flush_mode interval
-        retry_type exponential_backoff
-        flush_thread_count 2
-        flush_interval 5s
-        retry_forever
-        retry_max_interval 30
-        chunk_limit_size "#{ENV['OUTPUT_BUFFER_CHUNK_LIMIT']}"
-        queue_limit_length "#{ENV['OUTPUT_BUFFER_QUEUE_LIMIT']}"
-        overflow_action drop_oldest_chunk
-      </buffer>
-    </match>
+  useDefaults:
+    systemConf: true
+    containersInputConf: true
+    systemInputConf: true
+    forwardInputConf: true
+    monitoringConf: true
+    outputConf: true
+    
