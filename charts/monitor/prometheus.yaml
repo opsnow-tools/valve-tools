@@ -10,7 +10,6 @@ server:
   ## Prometheus server container image
   image:
     repository: prom/prometheus
-    tag: v2.16.0
 
   #:ING:service:
   #:ING:  type: SERVICE_TYPE
@@ -92,7 +91,6 @@ alertmanager:
   ## alertmanager container image
   image:
     repository: prom/alertmanager
-    tag: v0.20.0
 
   #:ING:service:
   #:ING:  type: SERVICE_TYPE
@@ -140,7 +138,6 @@ kubeStateMetrics:
   ## kube-state-metrics container image
   image:
     repository: quay.io/coreos/kube-state-metrics
-    tag: v1.9.5
 
   replicaCount: 1
 
