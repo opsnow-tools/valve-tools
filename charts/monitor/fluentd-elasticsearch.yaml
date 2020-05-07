@@ -1,50 +1,235 @@
-# chart-repo: stable/fluentd-elasticsearch
-# chart-version: 2.0.7
+# chart-repo: kiwigrid/fluentd-elasticsearch
+# chart-version: 9.0.0
 
-nameOverride: fluentd-elasticsearch
+## https://github.com/kiwigrid/helm-charts/tree/master/charts/fluentd-elasticsearch
+
+nameOverride: fluentd-elasticsearch-andy
 
 image:
-  repository: GCR/google-containers/fluentd-elasticsearch
+  repository: quay.io/fluentd_elasticsearch/fluentd
+
+## If using AWS Elasticsearch, all requests to ES need to be signed regardless of whether
+## one is using Cognito or not. By setting this to true, this chart will install a sidecar
+## proxy that takes care of signing all requests being sent to the AWS ES Domain.
+awsSigningSidecar:
+  enabled: true
+  resources:
+    limits:
+      cpu: 300m
+      memory: 600Mi
+    requests:
+      cpu: 300m
+      memory: 600Mi
+  network:
+    port: 8080
+    address: localhost
+    remoteReadTimeoutSeconds: 15
+  image:
+    repository: abutaha/aws-es-proxy
+
+# Specify where fluentd can find logs
+hostLogDir:
+  varLog: /var/log
+  dockerContainers: /var/lib/docker/containers
+  libSystemdDir: /usr/lib64
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+resources:
+  limits:
+    cpu: 500m
+    memory: 1000Mi
+  requests:
+    cpu: 500m
+    memory: 1000Mi
 
 elasticsearch:
-  host: CUSTOM_HOST
-  port: CUSTOM_PORT
-  buffer_chunk_limit: 8M
-  buffer_queue_limit: 8
-  # logstash_prefix: 'logstash'
+  auth:
+    enabled: false
+    user: "yourUser"
+    password: "yourPass"
+  includeTagKey: true
+  hosts: ["CUSTOM_HOST:CUSTOM_PORT"]
+  logstash:
+    enabled: true
+    prefix: "logstash"
+  path: ""
+  scheme: "https"
+  sslVerify: true
+  sslVersion: "TLSv1_2"
+  outputType: "elasticsearch"
+  typeName: "_doc"
+  logLevel: "info"
+  reconnectOnError: true
+  reloadOnFailure: false
+  reloadConnections: false
+  buffer:
+    enabled: true
+    ## file에서 memory로 변경, 버퍼링을 위한 파일을 못찾는 에러가 발생하는 경우 있었음.
+    type: "memory"
+    #path: "/var/log/fluentd-buffers/kubernetes.system.buffer"
+    #flushMode: "interval"
+    #retryType: "exponential_backoff"
+    #flushThreadCount: 2
+    #flushInterval: "5s"
+    #retryForever: true
+    #retryMaxInterval: 30
+    #chunkLimitSize: "2M"
+    #queueLimitLength: 8
+    #overflowAction: "block"
 
+## If you want to change args of fluentd process
+## by example you can add -vv to launch with trace log
+fluentdArgs: "--no-supervisor -q"
+
+## extraConfigMaps 항목에서 재정의 하는 부분은 false로 설정함.
+## forward 기능은 사용하지 않으므로 false로 설정함.
 configMaps:
-  output.conf: |
-    # Enriches records with Kubernetes metadata
+  useDefaults:
+    systemConf: true
+    containersInputConf: false
+    systemInputConf: false
+    forwardInputConf: false
+    monitoringConf: true
+    outputConf: false
+
+extraConfigMaps:
+  output.conf: |-
+    <match **>
+      @type relabel
+      @label @NORMAL
+    </match>
+    <label @NORMAL>
+      <match **>
+        @id elasticsearch
+        @type "#{ENV['OUTPUT_TYPE']}"
+        @log_level "#{ENV['OUTPUT_LOG_LEVEL']}"
+        include_tag_key true
+        hosts "#{ENV['OUTPUT_HOSTS']}"
+        path "#{ENV['OUTPUT_PATH']}"
+        scheme "#{ENV['OUTPUT_SCHEME']}"
+        ssl_verify "#{ENV['OUTPUT_SSL_VERIFY']}"
+        ssl_version "#{ENV['OUTPUT_SSL_VERSION']}"
+        type_name "#{ENV['OUTPUT_TYPE_NAME']}"
+        logstash_format true
+        logstash_prefix "#{ENV['LOGSTASH_PREFIX']}"
+        reconnect_on_error true
+        <buffer>
+          ## file에서 memory로 변경, 버퍼링을 위한 파일을 못찾는 에러가 발생하는 경우 있었음.
+          @type memory
+        </buffer>
+      </match>
+    </label>
+  containers.input.conf: |-
+    ## nginx-ingress 로그 수집을 위해 추가함.
+    <source>
+      @id fluentd-containers-nginx.log
+      @type tail
+      path /var/log/containers/nginx-ingress-nodeport-controller-*.log
+      pos_file /var/log/containers-nginx.log.pos
+      ## 테그를 고정 시킴, 파일명 사용하지 않음.
+      tag raw.kubernetes.nginx
+      read_from_head true
+      <parse>
+        @type multi_format
+        <pattern>
+          format json
+          time_key time
+          time_format %Y-%m-%dT%H:%M:%S.%NZ
+        </pattern>
+        <pattern>
+          format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+          time_format %Y-%m-%dT%H:%M:%S.%N%:z
+        </pattern>
+      </parse>
+    </source>
+    <source>
+      @id fluentd-containers.log
+      @type tail
+      path /var/log/containers/*.log
+      ## 로그 중복 수집을 방지하기 위해 설정 추가함.
+      exclude_path ["/var/log/containers/nginx-ingress-nodeport-controller-*.log"]
+      pos_file /var/log/containers.log.pos
+      tag raw.kubernetes.*
+      read_from_head true
+      <parse>
+        @type multi_format
+        <pattern>
+          format json
+          time_key time
+          time_format %Y-%m-%dT%H:%M:%S.%NZ
+        </pattern>
+        <pattern>
+          format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+          time_format %Y-%m-%dT%H:%M:%S.%N%:z
+        </pattern>
+      </parse>
+    </source>
+    ## 쿠버네티스 클러스터 이름을 추가함. 동일한 ElasticSearch Index를 사용하는 경우 구분하기 위함.
+    <filter raw.kubernetes.**>
+      @id record_k8s_name_01
+      @type record_transformer
+      <record>
+        k8s_name okc2
+      </record>
+    </filter>
+    ## Detect exceptions in the log output and forward them as one log entry.
+    <match raw.kubernetes.**>
+      @id raw.kubernetes
+      @type detect_exceptions
+      remove_tag_prefix raw
+      message log
+      stream stream
+      multiline_flush_interval 5
+      max_bytes 500000
+      max_lines 1000
+    </match>
+    ## Concatenate multi-line logs
+    <filter **>
+      @id filter_concat
+      @type concat
+      key message
+      multiline_end_regexp /\n$/
+      separator ""
+      timeout_label @NORMAL
+      flush_interval 5
+    </filter>
+    ## Enriches records with Kubernetes metadata
     <filter kubernetes.**>
+      @id filter_kubernetes_metadata
       @type kubernetes_metadata
     </filter>
-    <match **>
-      @id elasticsearch
-      @type elasticsearch
-      @log_level info
-      include_tag_key true
-      type_name _doc
-      host "#{ENV['OUTPUT_HOST']}"
-      port "#{ENV['OUTPUT_PORT']}"
-      scheme "#{ENV['OUTPUT_SCHEME']}"
-      ssl_version "#{ENV['OUTPUT_SSL_VERSION']}"
-      logstash_format true
-      logstash_prefix "#{ENV['LOGSTASH_PREFIX']}"
-      reconnect_on_error true
-      reload_connections false
-      reload_on_failure false
-      <buffer>
-        @type file
-        path /var/log/fluentd-buffers/kubernetes.system.buffer
-        flush_mode interval
-        retry_type exponential_backoff
-        flush_thread_count 2
-        flush_interval 5s
-        retry_forever
-        retry_max_interval 30
-        chunk_limit_size "#{ENV['OUTPUT_BUFFER_CHUNK_LIMIT']}"
-        queue_limit_length "#{ENV['OUTPUT_BUFFER_QUEUE_LIMIT']}"
-        overflow_action drop_oldest_chunk
-      </buffer>
-    </match>
+    ## Fixes json fields in Elasticsearch
+    <filter kubernetes.**>
+      @id filter_parser
+      @type parser
+      key_name log
+      reserve_time true
+      reserve_data true
+      remove_key_name_field true
+      <parse>
+        @type multi_format
+        <pattern>
+          format json
+        </pattern>
+        <pattern>
+          format none
+        </pattern>
+      </parse>
+    </filter>
+    ## Nginx Access Log 파싱을 위해 추가함.
+    <filter kubernetes.nginx>
+      @id filter_nginx
+      @type parser
+      key_name message
+      reserve_time true
+      reserve_data true
+      remove_key_name_field false
+      <parse>
+        @type regexp
+        expression /^(?<the_real_ip>[^ ]*) (?<dummy1>[^ ]*) (?<dummy2>[^ ]*) (?<dummy3>[^ ]*) (?<remote_user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<status>[^ ]*) (?<body_bytes_sent>[^ ]*) "(?<http_referer>[^\"]*)" "(?<http_user_agent>[^\"]*)" (?<request_length>[^ ]*) (?<request_time>[^ ]*) \[(?<proxy_upstream_name>[^\]]*)\] (?<upstream_addr>[^ ]*) (?<upstream_response_length>[^ ]*) (?<upstream_response_time>[^ ]*) (?<upstream_status>[^ ]*) (?<req_id>[^ ]*)$/
+        types request_time:float,upstream_response_time:float,body_bytes_sent:integer,request_length:integer,upstream_response_length:integer
+        time_key time
+        time_format %d/%b/%Y:%H:%M:%S %z
+      </parse>
+    </filter>

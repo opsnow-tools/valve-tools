@@ -398,7 +398,7 @@ helm_install() {
             _debug "custom 이므로 custom 폴더를 repo로 설정합니다."
             REPO="${SHELL_DIR}/${REPO}"
         elif [ "${PREFIX}" != "stable" ]; then
-            _debug "stable 이므로 helm repo 명령어를 사용해 있는지 확인하고 없으면 등록합니다."
+            _debug "stable이 아닌경우 helm repo 명령어를 사용해 있는지 확인하고 없으면 등록합니다."
             # helm repo를 등록합니다.
             helm_repo "${PREFIX}"
         fi
@@ -1027,6 +1027,8 @@ helm_repo() {
             _REPO="https://charts.appscode.com/stable/"
         elif [ "${_NAME}" == "jetstack" ]; then
             _REPO="https://charts.jetstack.io"
+        elif [ "${_NAME}" == "kiwigrid" ]; then
+            _REPO="https://kiwigrid.github.io"
         fi
     fi
 
