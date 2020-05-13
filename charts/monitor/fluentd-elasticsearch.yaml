@@ -88,7 +88,7 @@ configMaps:
   useDefaults:
     systemConf: true
     containersInputConf: false
-    systemInputConf: false
+    systemInputConf: true
     forwardInputConf: false
     monitoringConf: true
     outputConf: false
